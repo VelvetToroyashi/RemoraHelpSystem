@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "LypHX3j3YgKhAcJSGUtSzqzbkZ/uh1r+nWy164bcak9DiY5j8lnBKcyXJ8Ok6/I4L8sP5S+Zm5a63UMbwcCcJg==",
+  "success": true,
+  "projectFilePath": "E:\\Projects\\VTP.Remora.Commands.HelpSystem\\VTP.Remora.Commands.HelpSystem\\VTP.Remora.Commands.HelpSystem.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\6.0.0\\microsoft.extensions.dependencyinjection.abstractions.6.0.0.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\microsoft.extensions.options\\6.0.0\\microsoft.extensions.options.6.0.0.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\microsoft.extensions.primitives\\6.0.0\\microsoft.extensions.primitives.6.0.0.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\oneof\\3.0.216\\oneof.3.0.216.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\remora.commands\\9.0.2\\remora.commands.9.0.2.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\remora.discord.api.abstractions\\58.0.0\\remora.discord.api.abstractions.58.0.0.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\remora.rest.core\\2.0.1\\remora.rest.core.2.0.1.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\remora.results\\7.1.1\\remora.results.7.1.1.nupkg.sha512",
+    "C:\\Users\\Cinnamon\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
