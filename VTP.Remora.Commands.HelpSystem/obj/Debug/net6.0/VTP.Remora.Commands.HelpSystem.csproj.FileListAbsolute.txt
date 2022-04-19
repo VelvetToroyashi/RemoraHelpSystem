@@ -1,5 +1,0 @@
-E:\Projects\VTP.Remora.Commands.HelpSystem\VTP.Remora.Commands.HelpSystem\obj\Debug\net6.0\VTP.Remora.Commands.HelpSystem.csproj.AssemblyReference.cache
-E:\Projects\VTP.Remora.Commands.HelpSystem\VTP.Remora.Commands.HelpSystem\obj\Debug\net6.0\VTP.Remora.Commands.HelpSystem.GeneratedMSBuildEditorConfig.editorconfig
-E:\Projects\VTP.Remora.Commands.HelpSystem\VTP.Remora.Commands.HelpSystem\obj\Debug\net6.0\VTP.Remora.Commands.HelpSystem.AssemblyInfoInputs.cache
-E:\Projects\VTP.Remora.Commands.HelpSystem\VTP.Remora.Commands.HelpSystem\obj\Debug\net6.0\VTP.Remora.Commands.HelpSystem.AssemblyInfo.cs
-E:\Projects\VTP.Remora.Commands.HelpSystem\VTP.Remora.Commands.HelpSystem\obj\Debug\net6.0\VTP.Remora.Commands.HelpSystem.csproj.CoreCompileInputs.cache
