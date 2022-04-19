@@ -34,7 +34,7 @@ public class CommandHelpService : ICommandHelpService
         var formatter = _services.GetService<IHelpFormatter>();
         
         if (formatter is null)
-            return Result.FromError(new InvalidOperationError("Help was called, but no formatter was registered."));
+            return Result.FromError(new InvalidOperationError("Help was invoked, but no formatter was registered."));
 
         IEnumerable<IEmbed> embeds;
 
@@ -48,12 +48,11 @@ public class CommandHelpService : ICommandHelpService
         }
         else
         {
-            if (nodes.First() is IParentNode pn) 
+            if (nodes.First() is IParentNode pn)
                 embeds = formatter.GetSubCommandEmbeds(pn.Children.GroupBy(n => n.Key));
             else
                 embeds = new[] { formatter.GetCommandHelp(nodes.First()) };
         }
-        
         
         return default;
     }
