@@ -18,9 +18,8 @@ public interface IHelpFormatter
     /// Creates one or more embeds for a help screen for the children of a group.
     /// </summary>
     /// <param name="subCommands">The child commands, grouped by name.</param>
-    /// <param name="executable">Whether the parent group is considered execurable.</param>
     /// <returns>One or more embeds displaying relevant information about the given commands.</returns>
-    IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands, bool executable);
+    IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands);
     
     /// <summary>
     /// Creates one or more embeds for a help screen showing the top-level commands.
