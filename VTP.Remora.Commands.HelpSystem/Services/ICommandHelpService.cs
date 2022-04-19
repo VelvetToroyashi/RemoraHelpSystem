@@ -1,4 +1,5 @@
-﻿using Remora.Rest.Core;
+﻿using System.Threading.Tasks;
+using Remora.Rest.Core;
 using Remora.Results;
 
 namespace VTP.Remora.Commands.HelpSystem.Services;
