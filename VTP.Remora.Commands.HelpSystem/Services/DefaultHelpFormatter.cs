@@ -70,9 +70,12 @@ public class DefaultHelpFormatter : IHelpFormatter
 
             if (parameter.Parameter.GetCustomAttribute<OptionAttribute>() is { } oa)
             {
+                builder.Append("--");
+                
                 if (oa.ShortName is not null && oa.LongName is not null)
                     builder.Append($"{oa.ShortName}/{oa.LongName}");
-                else builder.AppendLine(oa.ShortName?.ToString() ?? oa.LongName);
+                else 
+                    builder.AppendLine(oa.ShortName?.ToString() ?? oa.LongName);
             }
             
             if (parameter.IsOmissible())
