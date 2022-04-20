@@ -12,6 +12,10 @@ public interface IHelpFormatter
     /// </summary>
     /// <param name="command">The command that was found.</param>
     /// <returns>An embed displaying relevant information about the command.</returns>
+    /// <remarks>
+    /// This should never be invoked with a group node, as the implementation may not properly handle it.
+    /// Instead, the callee should invoke <see cref="GetSubCommandEmbeds"/>.
+    /// </remarks>
     IEmbed GetCommandHelp(IChildNode command);
     
     /// <summary>
