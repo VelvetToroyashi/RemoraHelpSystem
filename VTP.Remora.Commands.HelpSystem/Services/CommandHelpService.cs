@@ -44,16 +44,22 @@ public class CommandHelpService : ICommandHelpService
         }
         else if (nodes.Count > 1)
         {
-            embeds = formatter.GetSubCommandEmbeds(nodes.GroupBy(n => n.Key));
+            var matched = nodes[0].Parent.Children.Where(n => n.Key == nodes[0].Key);
+
+            var isExecutable = matched.Any() && !matched.All(n => n is not IParentNode);
+            
+            embeds = formatter.GetSubCommandEmbeds(nodes.GroupBy(n => n.Key), nodes[0].Parent, isExecutable);
         }
         else
         {
             if (nodes.First() is IParentNode pn)
-                embeds = formatter.GetSubCommandEmbeds(pn.Children.GroupBy(n => n.Key));
+                embeds = formatter.GetSubCommandEmbeds(pn.Children.GroupBy(n => n.Key), pn, false);
             else
                 embeds = new[] { formatter.GetCommandHelp(nodes.First()) };
         }
         
-        return default;
+        var sendResult = await _channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
+
+        return sendResult.IsSuccess ? Result.FromSuccess() : Result.FromError(sendResult.Error);
     }
 }

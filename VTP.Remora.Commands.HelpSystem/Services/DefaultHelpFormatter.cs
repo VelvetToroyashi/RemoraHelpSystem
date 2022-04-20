@@ -4,21 +4,71 @@ using System.Linq;
 using System.Text;
 using Remora.Commands.Attributes;
 using Remora.Commands.Extensions;
+using Remora.Commands.Groups;
 using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Conditions;
-using SwitchAttribute = System.Diagnostics.SwitchAttribute;
 
 namespace VTP.Remora.Commands.HelpSystem.Services;
 
 public class DefaultHelpFormatter : IHelpFormatter
 {
 
-    public IEmbed GetCommandHelp(IChildNode command) => null;
-    
-    public IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands)
+    public IEmbed GetCommandHelp(IChildNode command)
     {
+        var sb = new StringBuilder();
+
+        var casted = (CommandNode)command;
+
+        if (!string.IsNullOrEmpty(casted.Shape.Description))
+            sb.AppendLine(casted.Shape.Description);
+        else
+            sb.AppendLine("No description provided.");
+
+        
+        AddRequiredPermissions(sb, command);
+        AddCommandUsage(sb, command);
+
+        var embed = GetBaseEmbed() with
+        {
+            Title = $"Help for {command.Key}",
+            Description = sb.ToString()
+        };
+
+        return embed;
+    }
+    
+    public IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands, IParentNode parent, bool isExecutable)
+    {
+        if (subCommands.Count() is 1 && subCommands.First().All(sc => sc is not IParentNode))
+        {
+            var overloads = subCommands.First().ToArray();
+
+            for (int i = 0; i < overloads.Length; i++)
+                yield return (GetCommandHelp(overloads[i]) as Embed) with { Title = $"Help for {overloads[0].Key} (overload {i + 1} of {overloads.Length})" };
+        }
+        else
+        {
+            var sb = new StringBuilder();
+            
+            foreach (var scGroup in subCommands)
+            {
+                if (scGroup.Count() > 1 && scGroup.Any(sc => sc is IParentNode))
+                    sb.AppendLine($"`{scGroup.Key}*`");
+                else 
+                    sb.AppendLine($"`{scGroup.Key}`");
+            }
+
+            var embed = GetBaseEmbed() with
+            {
+                Title = $"Showing sub-command help for {(parent as IChildNode).Key}",
+                Description = sb.ToString()
+            };
+            
+            yield return embed;
+        }
+        
         yield break;
     }
     
@@ -62,24 +112,42 @@ public class DefaultHelpFormatter : IHelpFormatter
         foreach (var parameter in cn.Shape.Parameters)
         {
             builder.Append(parameter.IsOmissible() ? "`[`" : "`<`");
-            
-            if (parameter.Parameter.GetCustomAttribute<SwitchAttribute>() is not null)
-                builder.Append("--");
+
+            char? shortName = null;
+            string longName = null;
+
+            var named = false;
+
+            if (parameter.Parameter.GetCustomAttribute<SwitchAttribute>() is { } sa)
+            {
+                named = true;
+
+                shortName = sa.ShortName;
+                longName = sa.LongName;
+            }
             
             builder.Append(parameter.Parameter.Name);
 
             if (parameter.Parameter.GetCustomAttribute<OptionAttribute>() is { } oa)
             {
-                if (oa.ShortName is not null && oa.LongName is not null)
+                named = true;
+
+                shortName = oa.ShortName;
+                longName = oa.LongName;
+            }
+
+            if (named)
+            {
+                if (shortName is not null && longName is not null)
                 {
-                    builder.Append($"--{oa.ShortName}/-{oa.LongName}");
+                    builder.Append($"-{shortName}/--{longName}");
                 }
                 else
                 {
-                    if (oa.ShortName is null)
-                        builder.Append($"-{oa.LongName}");
+                    if (shortName is null)
+                        builder.Append($"-{longName}");
                     else
-                        builder.Append($"--{oa.ShortName}");
+                        builder.Append($"--{shortName}");
                 }
             }
             
