@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTP.Remora.Commands.HelpSystem", "VTP.Remora.Commands.HelpSystem\VTP.Remora.Commands.HelpSystem.csproj", "{946BB21B-9659-40F0-B72C-972B608C0A15}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpSystem.Tests", "HelpSystem.Tests\HelpSystem.Tests.csproj", "{5C15E42C-8102-4100-BA5E-AD50581EB60B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{946BB21B-9659-40F0-B72C-972B608C0A15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{946BB21B-9659-40F0-B72C-972B608C0A15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{946BB21B-9659-40F0-B72C-972B608C0A15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C15E42C-8102-4100-BA5E-AD50581EB60B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C15E42C-8102-4100-BA5E-AD50581EB60B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C15E42C-8102-4100-BA5E-AD50581EB60B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C15E42C-8102-4100-BA5E-AD50581EB60B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
