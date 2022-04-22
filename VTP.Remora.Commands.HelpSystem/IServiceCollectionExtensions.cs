@@ -20,10 +20,10 @@ public static class IServiceCollectionExtensions
                 .Finish();
         }
 
-        services.AddSingleton<TreeWalker>();
+        services.AddScoped<TreeWalker>();
 
-        services.AddSingleton<IHelpFormatter, DefaultHelpFormatter>();
-        services.AddSingleton<ICommandHelpService, CommandHelpService>();
+        services.AddScoped<IHelpFormatter, DefaultHelpFormatter>();
+        services.AddScoped<ICommandHelpService, CommandHelpService>();
         
         return services;
     }
