@@ -34,6 +34,14 @@ public class TreeWalkerTests
     }
 
     [Test]
+    public void EmptyInputReturnsAllCommands()
+    {
+        var command = _walker.FindNodes(null);
+        
+        Assert.AreEqual(8, command.Count);
+    }
+    
+    [Test]
     public void ReturnsCorrectTopLevelCommand()
     {
         var command = _walker.FindNodes("command");
