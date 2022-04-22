@@ -10,6 +10,11 @@ public class TreeWalker
 {
     private readonly CommandService _commands;
     
+    public TreeWalker(CommandService commands)
+    {
+        _commands = commands;
+    }
+    
     public IReadOnlyList<IChildNode> FindNodes(string? name, string? treeName = null)
     { 
         if (!_commands.TreeAccessor.TryGetNamedTree(treeName, out var tree))
