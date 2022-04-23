@@ -39,7 +39,7 @@ public class DefaultHelpFormatter : IHelpFormatter
         return embed;
     }
     
-    public IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands, IParentNode parent, bool isExecutable)
+    public IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands)
     {
         if (subCommands.Count() is 1 && subCommands.First().All(sc => sc is not IParentNode))
         {
@@ -47,6 +47,31 @@ public class DefaultHelpFormatter : IHelpFormatter
 
             for (int i = 0; i < overloads.Length; i++)
                 yield return (GetCommandHelp(overloads[i]) as Embed) with { Title = $"Help for {overloads[0].Key} (overload {i + 1} of {overloads.Length})" };
+
+            yield break;
+        }
+        
+        if (subCommands.Count() is 1)
+        {
+            var group = subCommands.First(sc => sc is IParentNode) as IParentNode;
+            var executable = subCommands.Where(c => c is not IParentNode);
+            
+            var sb = new StringBuilder();
+            
+            foreach (var scGroup in group.Children.GroupBy(c => c.Key))
+            {
+                if (scGroup.Count() > 1 && scGroup.Any(sc => sc is IParentNode))
+                    sb.AppendLine($"`{scGroup.Key}*`");
+                else 
+                    sb.AppendLine($"`{scGroup.Key}`");
+            }
+            var embed = GetBaseEmbed() with
+            {
+                Title = $"Showing sub-command help for {(group as IChildNode).Key}",
+                Description = sb.ToString()
+            };
+            
+            yield return embed;
         }
         else
         {
@@ -59,10 +84,10 @@ public class DefaultHelpFormatter : IHelpFormatter
                 else 
                     sb.AppendLine($"`{scGroup.Key}`");
             }
-
+            
             var embed = GetBaseEmbed() with
             {
-                Title = $"Showing sub-command help for {(parent as IChildNode).Key}",
+                Title = $"Showing sub-command help for {(subCommands.First().First().Parent as IChildNode).Key}",
                 Description = sb.ToString()
             };
             
@@ -80,7 +105,7 @@ public class DefaultHelpFormatter : IHelpFormatter
         
         foreach (var group in sorted)
         {
-            if (group.Count() is 1 || !group.Any(g => g is IParentNode))
+            if (group.Count() is 1 || group.All(g => g is not IParentNode))
                 sb.AppendLine($"`{group.Key}` ");
             else
                 sb.AppendLine($"`{group.Key}*` ");

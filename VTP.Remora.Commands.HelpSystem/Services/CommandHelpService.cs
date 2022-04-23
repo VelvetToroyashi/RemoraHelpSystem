@@ -44,16 +44,12 @@ public class CommandHelpService : ICommandHelpService
         }
         else if (nodes.Count > 1)
         {
-            var matched = nodes[0].Parent.Children.Where(n => n.Key == nodes[0].Key);
-
-            var isExecutable = matched.Any() && !matched.All(n => n is not IParentNode);
-            
-            embeds = formatter.GetSubCommandEmbeds(nodes.GroupBy(n => n.Key), nodes[0].Parent, isExecutable);
+            embeds = formatter.GetSubCommandEmbeds(nodes.GroupBy(n => n.Key));
         }
         else
         {
             if (nodes.First() is IParentNode pn)
-                embeds = formatter.GetSubCommandEmbeds(pn.Children.GroupBy(n => n.Key), pn, false);
+                embeds = formatter.GetSubCommandEmbeds(pn.Children.GroupBy(n => n.Key));
             else
                 embeds = new[] { formatter.GetCommandHelp(nodes.First()) };
         }
