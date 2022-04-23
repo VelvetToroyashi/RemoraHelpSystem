@@ -136,6 +136,7 @@ public class DefaultHelpFormatter : IHelpFormatter
         
         foreach (var parameter in cn.Shape.Parameters)
         {
+            builder.AppendLine();
             builder.Append(parameter.IsOmissible() ? "`[" : "`<");
 
             char? shortName = null;
