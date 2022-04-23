@@ -173,9 +173,11 @@ public class DefaultHelpFormatter : IHelpFormatter
                     else
                         builder.Append($"--{shortName}");
                 }
+                
+                builder.Append(' ');
             }
 
-            builder.Append(' ');
+           
             builder.Append(parameter.Parameter.Name);
             
             if (parameter.IsOmissible())
