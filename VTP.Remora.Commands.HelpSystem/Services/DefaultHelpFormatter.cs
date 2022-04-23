@@ -136,7 +136,7 @@ public class DefaultHelpFormatter : IHelpFormatter
         
         foreach (var parameter in cn.Shape.Parameters)
         {
-            builder.Append(parameter.IsOmissible() ? "`[`" : "`<`");
+            builder.Append(parameter.IsOmissible() ? "`[" : "`<");
 
             char? shortName = null;
             string longName = null;
@@ -177,9 +177,9 @@ public class DefaultHelpFormatter : IHelpFormatter
             }
             
             if (parameter.IsOmissible())
-                builder.Append("`]`");
+                builder.Append("]`");
             else
-                builder.Append("`>`");
+                builder.Append(">`");
             
             builder.AppendLine($" {(string.IsNullOrEmpty(parameter.Description) ? "No description" : parameter.Description)}");
         }        
