@@ -152,8 +152,6 @@ public class DefaultHelpFormatter : IHelpFormatter
                 longName = sa.LongName;
             }
             
-            builder.Append(parameter.Parameter.Name);
-
             if (parameter.Parameter.GetCustomAttribute<OptionAttribute>() is { } oa)
             {
                 named = true;
@@ -176,6 +174,8 @@ public class DefaultHelpFormatter : IHelpFormatter
                         builder.Append($"--{shortName}");
                 }
             }
+            
+            builder.Append(parameter.Parameter.Name);
             
             if (parameter.IsOmissible())
                 builder.Append("]`");
