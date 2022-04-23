@@ -143,10 +143,12 @@ public class DefaultHelpFormatter : IHelpFormatter
             string longName = null;
 
             var named = false;
+            var isSwitch = false;
 
             if (parameter.Parameter.GetCustomAttribute<SwitchAttribute>() is { } sa)
             {
                 named = true;
+                isSwitch = true;
 
                 shortName = sa.ShortName;
                 longName = sa.LongName;
@@ -177,8 +179,8 @@ public class DefaultHelpFormatter : IHelpFormatter
                 builder.Append(' ');
             }
 
-           
-            builder.Append(parameter.Parameter.Name);
+           if (!isSwitch)
+                builder.Append(parameter.Parameter.Name);
             
             if (parameter.IsOmissible())
                 builder.Append("]`");
