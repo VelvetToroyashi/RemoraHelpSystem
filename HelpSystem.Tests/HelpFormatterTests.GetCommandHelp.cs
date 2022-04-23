@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace HelpSystem.Tests;
@@ -231,5 +232,12 @@ public partial class HelpFormatterTests
         
         Assert.AreEqual("This command requires the following permissions: SendMessages\r", description[1]);
     }
-    
+
+    [Test]
+    public void DoesntWorkWithGroup()
+    {
+        var group = _treeWalker.FindNodes("standalone-group")[0];
+
+        Assert.Throws<InvalidCastException>(() => _formatter.GetCommandHelp(group));
+    }
 }
