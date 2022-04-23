@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -5,10 +6,12 @@ using Remora.Results;
 
 namespace HelpSystem.Tests;
 
+[ExcludeFromCodeCoverage]
 public class TestCommands : CommandGroup
 {
     [Command("command")]
     public async Task<IResult> Command() => default;
+    
     
     [Command("overload")]
     public async Task<IResult> Overload(string arg) => default;

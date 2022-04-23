@@ -194,7 +194,11 @@ public class DefaultHelpFormatter : IHelpFormatter
 
     private void AddRequiredPermissions(StringBuilder builder, IChildNode node)
     {
-        if (node.GetType().GetCustomAttribute<RequireDiscordPermissionAttribute>() is { } rpa)
+        if (node is not CommandNode cn)
+            return;
+        
+        if ((cn.GroupType.GetCustomAttribute<RequireDiscordPermissionAttribute>() ??
+            cn.CommandMethod.GetCustomAttribute<RequireDiscordPermissionAttribute>()) is {} rpa)
             builder.AppendLine($"This command requires the following permissions: {string.Join(", ", rpa.Permissions)}");
     }
 
