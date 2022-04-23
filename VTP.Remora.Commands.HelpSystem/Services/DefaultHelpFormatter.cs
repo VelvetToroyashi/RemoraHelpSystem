@@ -168,7 +168,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                 }
                 else
                 {
-                    if (shortName is null)
+                    if (shortName is not null)
                         builder.Append($"-{longName}");
                     else
                         builder.Append($"--{shortName}");
