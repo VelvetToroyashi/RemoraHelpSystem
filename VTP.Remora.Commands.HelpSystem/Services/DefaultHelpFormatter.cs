@@ -176,7 +176,8 @@ public class DefaultHelpFormatter : IHelpFormatter
                         builder.Append($"--{longName}");
                 }
                 
-                builder.Append(' ');
+                if (!isSwitch)
+                    builder.Append(' ');
             }
 
            if (!isSwitch)
