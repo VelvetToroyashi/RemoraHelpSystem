@@ -131,5 +131,13 @@ public class TreeWalkerTests
         
         Assert.AreEqual(0, command.Count);
     }
+
+    [Test]
+    public void ReturnsEmptyResultWhenGroupNotFound()
+    {
+        var command = _walker.FindNodes("group command unknown");
+        
+        Assert.AreEqual(0, command.Count);
+    }
     
 }
