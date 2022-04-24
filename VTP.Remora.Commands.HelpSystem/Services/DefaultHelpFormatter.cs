@@ -77,8 +77,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                 yield break;
             }
         }
-
-        //
+        
         // Bug: Callee may pass children of a group, or the group itself.
         // We only support the latter in this implementation, but this is not
         // clearly documented. TODO: Add add check for naming??
@@ -105,7 +104,7 @@ public class DefaultHelpFormatter : IHelpFormatter
         // which is impossible to do without backtracking anwyay.
         var executable = subCommands.Where(sc => sc is not IParentNode).Cast<CommandNode>();
 
-        sb.AppendLine(group.Description ?? executable.FirstOrDefault(cn => cn.Shape.Description is not null)?.Shape.Description ?? "No description set.");
+        sb.AppendLine(group.GetDescription() ?? executable.FirstOrDefault(cn => cn.Shape.Description is not null)?.Shape.Description ?? "No description set.");
         sb.AppendLine();
         
         AddGroupCommandUsage(sb, executable);
