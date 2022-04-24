@@ -24,7 +24,7 @@ public class DefaultHelpFormatter : IHelpFormatter
         if (!string.IsNullOrEmpty(casted.Shape.Description))
             sb.AppendLine(casted.Shape.Description);
         else
-            sb.AppendLine("No description provided.");
+            sb.AppendLine("No description set.");
 
         
         AddRequiredPermissions(sb, command);
