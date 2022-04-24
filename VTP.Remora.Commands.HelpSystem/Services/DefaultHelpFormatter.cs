@@ -78,6 +78,10 @@ public class DefaultHelpFormatter : IHelpFormatter
             }
         }
 
+        //
+        // Bug: Callee may pass children of a group, or the group itself.
+        // We only support the latter in this implementation, but this is not
+        // clearly documented. TODO: Add add check for naming??
         if (!subCommands.OfType<IParentNode>().Any())
         {
             var sca = subCommands.ToArray();
