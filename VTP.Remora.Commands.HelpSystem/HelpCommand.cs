@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -8,6 +9,7 @@ using VTP.Remora.Commands.HelpSystem.Services;
 
 namespace VTP.Remora.Commands.HelpSystem;
 
+[ExcludeFromCodeCoverage]
 public class HelpCommand : CommandGroup
 {
     private readonly ICommandContext _context;
