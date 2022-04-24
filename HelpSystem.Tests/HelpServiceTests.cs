@@ -84,7 +84,7 @@ public class HelpServiceTests
         var formatterMock = new Mock<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetSubCommandEmbeds(It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
+            .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
         var channelMock = new Mock<IDiscordRestChannelAPI>();
@@ -107,14 +107,14 @@ public class HelpServiceTests
         
         formatterMock.Verify
         (
-            fm => fm.GetSubCommandEmbeds
+            fm => fm.GetCommandHelp
             (
-                It.Is<IEnumerable<IGrouping<string, IChildNode>>>
-                    (
-                        s => s.Count() == 1 && 
-                             s.First().Count() == 1 && 
-                             s.First().First().Key == "command"
-                    )
+                (IEnumerable<IChildNode>)It.Is<IEnumerable<IGrouping<string, IChildNode>>>
+                (
+                    s => s.Count() == 1 && 
+                         s.First().Count() == 1 && 
+                         s.First().First().Key == "command"
+                )
             ),
             Times.Once
         );
@@ -126,7 +126,7 @@ public class HelpServiceTests
         var formatterMock = new Mock<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetSubCommandEmbeds(It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
+            .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
         var channelMock = new Mock<IDiscordRestChannelAPI>();
@@ -149,9 +149,9 @@ public class HelpServiceTests
         
         formatterMock.Verify
         (
-            fm => fm.GetSubCommandEmbeds
+            fm => fm.GetCommandHelp
             (
-                It.Is<IEnumerable<IGrouping<string, IChildNode>>>
+                (IEnumerable<IChildNode>)It.Is<IEnumerable<IGrouping<string, IChildNode>>>
                 (
                     s => s.Count() == 1 && 
                          s.First().Count() == 2 && 
@@ -203,7 +203,7 @@ public class HelpServiceTests
         var formatterMock = new Mock<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetSubCommandEmbeds(It.IsAny<IEnumerable<IGrouping<string,IChildNode>>>()))
+            .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string,IChildNode>>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
         var channelMock = new Mock<IDiscordRestChannelAPI>();
@@ -227,9 +227,9 @@ public class HelpServiceTests
         
         formatterMock.Verify
         (
-            fm => fm.GetSubCommandEmbeds
+            fm => fm.GetCommandHelp
             (
-                It.Is<IEnumerable<IGrouping<string, IChildNode>>>
+                (IEnumerable<IChildNode>)It.Is<IEnumerable<IGrouping<string, IChildNode>>>
                 (
                     s => s.Count() == 1 && 
                          s.First().Count() == 2 && 
