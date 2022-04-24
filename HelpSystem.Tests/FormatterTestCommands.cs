@@ -151,8 +151,6 @@ public class FormatterTestCommands : CommandGroup
         public async Task<IResult> DescribedExecutableCommand() => default;
     }
     
-    
-    
     [Group("complex-group")]
     public class ComplexGroup : CommandGroup
     {
