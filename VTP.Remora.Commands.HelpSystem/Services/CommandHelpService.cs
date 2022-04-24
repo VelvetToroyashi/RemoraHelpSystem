@@ -38,11 +38,12 @@ public class CommandHelpService : ICommandHelpService
 
         IEnumerable<IEmbed> embeds;
 
-        embeds = (nodes.Count, string.IsNullOrEmpty(commandName)) switch
+        embeds = (nodes.Count, string.IsNullOrEmpty(commandName), nodes.FirstOrDefault() is IParentNode) switch
         {
-            (> 1, true) => formatter.GetTopLevelHelpEmbeds(nodes.GroupBy(n => n.Key)),
-            (> 1, false) => formatter.GetCommandHelp(nodes),
-            (1, _) => new [] {formatter.GetCommandHelp(nodes.Single()) }
+            (> 1, true, _)  => formatter.GetTopLevelHelpEmbeds(nodes.GroupBy(n => n.Key)),
+            (> 1, false, _) => formatter.GetCommandHelp(nodes),
+            (1, _, false)   => new [] {formatter.GetCommandHelp(nodes.Single()) },
+            (1, _, true)    => formatter.GetCommandHelp(nodes)
         };
 
         var sendResult = await _channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
