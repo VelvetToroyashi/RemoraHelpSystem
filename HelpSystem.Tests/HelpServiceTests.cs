@@ -105,16 +105,11 @@ public class HelpServiceTests
         
         Assert.IsTrue(result.IsSuccess);
         
+        // This is technically wrong, see commit f1dec1fa
+        // or the comment in this GetCommandHelp below
         formatterMock.Verify
         (
-            fm => fm.GetCommandHelp
-            (
-                It.Is<IEnumerable<IChildNode>>
-                (
-                    s => s.Count() == 1 &&
-                         s.Single().Key == "command"
-                )
-            ),
+            fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()),
             Times.Once
         );
     }
@@ -227,12 +222,10 @@ public class HelpServiceTests
         (
             fm => fm.GetCommandHelp
             (
-                (IEnumerable<IChildNode>)It.Is<IEnumerable<IGrouping<string, IChildNode>>>
+                It.Is<IEnumerable<IChildNode>>
                 (
-                    s => s.Count() == 1 && 
-                         s.First().Count() == 2 && 
-                         s.First().First() is CommandNode && 
-                         s.First().Last() is CommandNode
+                    s => s.Count() == 2 &&
+                         s.All(sc => sc is CommandNode)
                 )
             ),
             Times.Once
