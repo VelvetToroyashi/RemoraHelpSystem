@@ -54,6 +54,9 @@ public class DefaultHelpFormatter : IHelpFormatter
             }
             else
             {
+                sb.AppendLine((pn as GroupNode).Description ?? "No description provided.");
+                sb.AppendLine();
+                
                 var grouped = pn.Children.GroupBy(x => x.Key);
 
                 foreach (var command in grouped)
@@ -66,7 +69,7 @@ public class DefaultHelpFormatter : IHelpFormatter
 
                 embed = GetBaseEmbed() with
                 {
-                    Title = $"Showing subcommands for {subCommands.Single().Key}",
+                    Title = $"Showing sub-command help for {subCommands.Single().Key}",
                     Description = sb.ToString()
                 };
 
@@ -84,8 +87,6 @@ public class DefaultHelpFormatter : IHelpFormatter
 
             yield break;
         }
-
-        
         
         // If we need to deal with overloaded groups, it's actually pretty simple.
         // var children = subCommands.OfType<IParentNode>().SelectMany(x => x.Children);
@@ -94,11 +95,14 @@ public class DefaultHelpFormatter : IHelpFormatter
         // by default is because it's somewhat niche? But the code is there in case changes
         // need to be made. There's also the performance impact of re-iterating more than we
         // have to, but we're using LINQ, so allocations > speed anyways.
-        var group = subCommands.First(sc => sc is IParentNode) as IParentNode;
+        var group = subCommands.First(sc => sc is IParentNode) as GroupNode;
 
         // This makes the assumption that there are no overloaded groups,
         // which would be a general pain in the butt to deal with.
         var executable = subCommands.Where(sc => sc is not IParentNode);
+
+        sb.AppendLine(group.Description ?? "No description provided.");
+        sb.AppendLine();
         
         AddGroupCommandUsage(sb, executable);
 
