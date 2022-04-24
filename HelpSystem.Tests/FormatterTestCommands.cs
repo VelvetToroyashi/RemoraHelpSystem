@@ -165,7 +165,10 @@ public class FormatterTestCommands : CommandGroup
         [Command("overload")]
         public async Task<IResult> OverloadedCommand(string arg) => default;
         
-        [Group("nested-group")]
+        [Command("nested-executable-group")]
+        public async Task<IResult> NestedExecutableGroupCommand() => default;
+        
+        [Group("nested-executable-group")]
         public class NestedGroup : CommandGroup
         {
             [Command("command")]
