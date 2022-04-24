@@ -84,7 +84,7 @@ public class HelpServiceTests
         var formatterMock = new Mock<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
+            .Setup(fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
         var channelMock = new Mock<IDiscordRestChannelAPI>();
@@ -109,11 +109,10 @@ public class HelpServiceTests
         (
             fm => fm.GetCommandHelp
             (
-                (IEnumerable<IChildNode>)It.Is<IEnumerable<IGrouping<string, IChildNode>>>
+                It.Is<IEnumerable<IChildNode>>
                 (
-                    s => s.Count() == 1 && 
-                         s.First().Count() == 1 && 
-                         s.First().First().Key == "command"
+                    s => s.Count() == 1 &&
+                         s.Single().Key == "command"
                 )
             ),
             Times.Once
@@ -126,7 +125,7 @@ public class HelpServiceTests
         var formatterMock = new Mock<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
+            .Setup(fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
         var channelMock = new Mock<IDiscordRestChannelAPI>();
@@ -151,12 +150,11 @@ public class HelpServiceTests
         (
             fm => fm.GetCommandHelp
             (
-                (IEnumerable<IChildNode>)It.Is<IEnumerable<IGrouping<string, IChildNode>>>
+                It.Is<IEnumerable<IChildNode>>
                 (
-                    s => s.Count() == 1 && 
-                         s.First().Count() == 2 && 
-                         s.First().First() is CommandNode && 
-                         s.First().Last() is GroupNode
+                    s => s.Count() == 2 &&
+                         s.First() is CommandNode && 
+                         s.Last() is GroupNode
                 )
             ),
             Times.Once
