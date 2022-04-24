@@ -39,61 +39,87 @@ public class DefaultHelpFormatter : IHelpFormatter
         return embed;
     }
     
-    public IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands)
+    public IEnumerable<IEmbed> GetCommandHelp(IEnumerable<IChildNode> subCommands)
     {
-        if (subCommands.Count() is 1 && subCommands.First().All(sc => sc is not IParentNode))
-        {
-            var overloads = subCommands.First().ToArray();
+        Embed embed = null!;
+        
+        var sb = new StringBuilder();
 
-            for (int i = 0; i < overloads.Length; i++)
-                yield return (GetCommandHelp(overloads[i]) as Embed) with { Title = $"Help for {overloads[0].Key} (overload {i + 1} of {overloads.Length})" };
+        if (subCommands.Count() is 1)
+        {
+            if (subCommands.Single() is not IParentNode pn)
+            {
+                yield return GetCommandHelp(subCommands.Single());
+                yield break;
+            }
+            else
+            {
+                var grouped = pn.Children.GroupBy(x => x.Key);
+
+                foreach (var command in grouped)
+                {
+                    if (command.Count() > 1 && command.Any(sc => sc is IParentNode))
+                        sb.AppendLine($"`{command.Key}*`");
+                    else
+                        sb.AppendLine($"`{command.Key}`");
+                }
+
+                embed = GetBaseEmbed() with
+                {
+                    Title = $"Showing subcommands for {subCommands.Single().Key}",
+                    Description = sb.ToString()
+                };
+
+                yield return embed;
+                yield break;
+            }
+        }
+
+        if (!subCommands.OfType<IParentNode>().Any())
+        {
+            var sca = subCommands.ToArray();
+            
+            for (int i = 0; i < sca.Length; i++)
+                yield return (GetCommandHelp(sca[i]) as Embed) with { Title = $"Help for {sca[0].Key} (overload {i + 1} of {sca.Length})" };
 
             yield break;
         }
+
         
-        if (subCommands.Count() is 1)
+        
+        // If we need to deal with overloaded groups, it's actually pretty simple.
+        // var children = subCommands.OfType<IParentNode>().SelectMany(x => x.Children);
+        // var parent = subCommands.OfType<IParentNode>().First();
+        // Then, just use the children as you would normally. The reaosn this isn't done
+        // by default is because it's somewhat niche? But the code is there in case changes
+        // need to be made. There's also the performance impact of re-iterating more than we
+        // have to, but we're using LINQ, so allocations > speed anyways.
+        var group = subCommands.First(sc => sc is IParentNode) as IParentNode;
+
+        // This makes the assumption that there are no overloaded groups,
+        // which would be a general pain in the butt to deal with.
+        var executable = subCommands.Where(sc => sc is not IParentNode);
+        
+        AddGroupCommandUsage(sb, executable);
+
+        var gsc = group.Children.GroupBy(x => x.Key);
+        
+        foreach (var scGroup in gsc)
         {
-            var group = subCommands.First(sc => sc is IParentNode) as IParentNode;
-            var executable = subCommands.Where(c => c is not IParentNode);
-            
-            var sb = new StringBuilder();
-            
-            foreach (var scGroup in group.Children.GroupBy(c => c.Key))
-            {
-                if (scGroup.Count() > 1 && scGroup.Any(sc => sc is IParentNode))
-                    sb.AppendLine($"`{scGroup.Key}*`");
-                else 
-                    sb.AppendLine($"`{scGroup.Key}`");
-            }
-            var embed = GetBaseEmbed() with
-            {
-                Title = $"Showing sub-command help for {(group as IChildNode).Key}",
-                Description = sb.ToString()
-            };
-            
-            yield return embed;
-        }
-        else
-        {
-            var sb = new StringBuilder();
-            
-            foreach (var scGroup in subCommands)
-            {
-                if (scGroup.Count() > 1 && scGroup.Any(sc => sc is IParentNode))
-                    sb.AppendLine($"`{scGroup.Key}*`");
-                else 
-                    sb.AppendLine($"`{scGroup.Key}`");
-            }
-            
-            var embed = GetBaseEmbed() with
-            {
-                Title = $"Showing sub-command help for {(subCommands.First().First().Parent as IChildNode).Key}",
-                Description = sb.ToString()
-            };
-            
-            yield return embed;
+            if (scGroup.Count() > 1 && scGroup.Any(sc => sc is IParentNode))
+                sb.AppendLine($"`{scGroup.Key}*`");
+            else 
+                sb.AppendLine($"`{scGroup.Key}`");
         }
         
+        embed = GetBaseEmbed() with
+        {
+            Title = $"Showing sub-command help for {(group as IChildNode).Key}",
+            Description = sb.ToString()
+        };
+        
+        yield return embed;
+
         yield break;
     }
     
@@ -123,6 +149,92 @@ public class DefaultHelpFormatter : IHelpFormatter
 
     private Embed GetBaseEmbed() => new() { Colour = Color.DodgerBlue };
 
+    private void AddGroupCommandUsage(StringBuilder builder, IEnumerable<IChildNode> overloads)
+    {
+        var casted = overloads.Cast<CommandNode>().ToArray();
+        
+        builder.Append($"This group can be executed like a command");
+
+        if (casted.Any(ol => !ol.Shape.Parameters.Any()))
+            builder.Append(" without parameters");
+        
+        builder.Append(".\n");
+
+        foreach (var overload in casted)
+        {
+            if (!overload.Shape.Parameters.Any())
+                continue;
+
+            var localBuilder = new StringBuilder();
+
+            localBuilder.Append('`');
+
+            foreach (var parameter in overload.Shape.Parameters)
+            {
+                localBuilder.AppendLine();
+                localBuilder.Append(parameter.IsOmissible() ? "[" : "<");
+
+                char? shortName = null;
+                string longName = null;
+
+                var named = false;
+                var isSwitch = false;
+
+                if (parameter.Parameter.GetCustomAttribute<SwitchAttribute>() is { } sa)
+                {
+                    named = true;
+                    isSwitch = true;
+
+                    shortName = sa.ShortName;
+                    longName = sa.LongName;
+                }
+
+                if (parameter.Parameter.GetCustomAttribute<OptionAttribute>() is { } oa)
+                {
+                    named = true;
+
+                    shortName = oa.ShortName;
+                    longName = oa.LongName;
+                }
+
+                if (named)
+                {
+                    if (shortName is not null && longName is not null)
+                    {
+                        localBuilder.Append($"-{shortName}/--{longName}");
+                    }
+                    else
+                    {
+                        if (shortName is not null)
+                            localBuilder.Append($"-{shortName}");
+                        else
+                            localBuilder.Append($"--{longName}");
+                    }
+
+                    if (!isSwitch)
+                        localBuilder.Append(' ');
+                }
+
+                if (!isSwitch)
+                    localBuilder.Append(parameter.Parameter.Name);
+
+                if (parameter.IsOmissible())
+                    localBuilder.Append("]");
+                else
+                    localBuilder.Append(">");
+
+                localBuilder.Append(' ');
+            }
+            
+            localBuilder[^1] = '`';
+            
+            builder.AppendLine(localBuilder.ToString());
+            builder.AppendLine();
+
+            localBuilder.Clear();
+        }
+    }
+    
     private void AddCommandUsage(StringBuilder builder, IChildNode command)
     {
         if (command is not CommandNode cn)

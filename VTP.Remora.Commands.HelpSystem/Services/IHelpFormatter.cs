@@ -14,16 +14,18 @@ public interface IHelpFormatter
     /// <returns>An embed displaying relevant information about the command.</returns>
     /// <remarks>
     /// This should never be invoked with a group node, as the implementation may not properly handle it.
-    /// Instead, the callee should invoke <see cref="GetSubCommandEmbeds"/>.
+    /// Instead, the callee should invoke <see cref="GetCommandHelp(System.Collections.Generic.IEnumerable{Remora.Commands.Trees.Nodes.IChildNode})"/>.
     /// </remarks>
     IEmbed GetCommandHelp(IChildNode command);
     
     /// <summary>
-    /// Creates one or more embeds for a help screen for the children of a group.
+    /// Creates one or more embeds for a help screen for the given child nodes.
+    ///
+    /// The provided nodes may be of any type, but it's generally expected that .
     /// </summary>
     /// <param name="subCommands">The child commands, grouped by name.</param>
     /// <returns>One or more embeds displaying relevant information about the given commands.</returns>
-    IEnumerable<IEmbed> GetSubCommandEmbeds(IEnumerable<IGrouping<string, IChildNode>> subCommands);
+    IEnumerable<IEmbed> GetCommandHelp(IEnumerable< IChildNode> subCommands);
     
     /// <summary>
     /// Creates one or more embeds for a help screen showing the top-level commands.
