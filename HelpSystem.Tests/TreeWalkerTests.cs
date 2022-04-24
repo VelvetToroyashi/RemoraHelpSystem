@@ -124,4 +124,12 @@ public class TreeWalkerTests
         Assert.AreEqual(0, command.Count);
     }
     
+    [Test]
+    public void ReturnsEmptyResultWhenNoTreeFound()
+    {
+        var command = _walker.FindNodes("command", "unknown");
+        
+        Assert.AreEqual(0, command.Count);
+    }
+    
 }
