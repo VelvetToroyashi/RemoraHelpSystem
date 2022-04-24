@@ -99,6 +99,34 @@ public partial class HelpFormatterTests
     }
 
     [Test]
+    public void WorksWithParameterizedExecutableGroupWithOption()
+    {
+        var command = _treeWalker.FindNodes("parameterized-executable-group-with-option");
+        
+        var embed = _formatter.GetCommandHelp(command).Single();
+        
+        var description = embed.Description.Value.Split('\n');
+        
+        Assert.AreEqual("This group can be executed like a command.", description[2]);
+        
+        Assert.AreEqual("`<-o parameter>`\r", description[3]);
+    }
+    
+    [Test]
+    public void WorksWithParameterizedExecutableGroupWithSwitch()
+    {
+        var command = _treeWalker.FindNodes("parameterized-executable-group-with-switch");
+        
+        var embed = _formatter.GetCommandHelp(command).Single();
+        
+        var description = embed.Description.Value.Split('\n');
+        
+        Assert.AreEqual("This group can be executed like a command.", description[2]);
+        
+        Assert.AreEqual("`[-s]`\r", description[3]);
+    }
+
+    [Test]
     public void DescribedExecutableGroupUsesGroupDescription()
     {
         var command = _treeWalker.FindNodes("described-executable-group");

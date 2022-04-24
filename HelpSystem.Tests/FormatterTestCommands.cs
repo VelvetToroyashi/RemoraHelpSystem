@@ -101,6 +101,26 @@ public class FormatterTestCommands : CommandGroup
         public async Task<IResult> ExecutableCommand() => default;
     }
     
+    [Command("parameterized-executable-group-with-option")]
+    public async Task<IResult> ExecutableGroupOptionCommand([Option('o')] string parameter) => default;
+    
+    [Group("parameterized-executable-group-with-option")]
+    public class ExecutableGroupOption : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> ExecutableCommand() => default;
+    }
+    
+    [Command("parameterized-executable-group-with-switch")]
+    public async Task<IResult> ExecutableGroupSwitchCommand([Switch('s')] bool parameter = false) => default;
+    
+    [Group("parameterized-executable-group-with-switch")]
+    public class ExecutableGroupSwitch : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> ExecutableCommand(bool parameter) => default;
+    }
+    
     [Command("parameterized-executable-group")]
     public async Task<IResult> ParameterizedExecutableGroupCommand(string parameter) => default;
     
