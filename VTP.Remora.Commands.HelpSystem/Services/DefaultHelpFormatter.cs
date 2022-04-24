@@ -98,10 +98,10 @@ public class DefaultHelpFormatter : IHelpFormatter
         var group = subCommands.First(sc => sc is IParentNode) as GroupNode;
 
         // This makes the assumption that there are no overloaded groups,
-        // which would be a general pain in the butt to deal with.
-        var executable = subCommands.Where(sc => sc is not IParentNode);
+        // which is impossible to do without backtracking anwyay.
+        var executable = subCommands.Where(sc => sc is not IParentNode).Cast<CommandNode>();
 
-        sb.AppendLine(group.Description ?? "No description provided.");
+        sb.AppendLine(group.Description ?? executable.FirstOrDefault(cn => cn.Shape.Description is not null)?.Shape.Description ?? "No description set.");
         sb.AppendLine();
         
         AddGroupCommandUsage(sb, executable);
