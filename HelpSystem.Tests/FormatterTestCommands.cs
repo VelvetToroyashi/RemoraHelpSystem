@@ -174,4 +174,24 @@ public class FormatterTestCommands : CommandGroup
         }
     }
     
+    [Command("executable-group-with-executable-children")]
+    public async Task<IResult> ExecutableGroupWithExecutableChildrenCommand() => default;
+    
+    [Group("executable-group-with-executable-children")]
+    public class ExecutableGroupWithExecutableChildren : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> ExecutableCommand() => default;
+        
+        [Command("executable-child-group")]
+        public async Task<IResult> ExecutableChildGroupCommand() => default;
+        
+        [Group("executable-child-group")]
+        public class ExecutableChildGroup : CommandGroup
+        {
+            [Command("command")]
+            public async Task<IResult> ExecutableCommand() => default;
+        }
+    }
+    
 }

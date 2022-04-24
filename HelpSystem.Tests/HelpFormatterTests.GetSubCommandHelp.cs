@@ -147,4 +147,26 @@ public partial class HelpFormatterTests
         Assert.AreEqual("`overload`\r", description[3]);
         Assert.AreEqual("`nested-executable-group*`\r", description[4]);
     }
+    
+    [Test]
+    public void HandlesNestedGroupsCorrectly()
+    {
+        var command = _treeWalker.FindNodes("executable-group-with-executable-children");
+        
+        var embeds = _formatter.GetCommandHelp(command).Single();
+        
+        var description = embeds.Description.Value.Split('\n');
+        
+        Assert.AreEqual("`command`\r", description[3]);
+        Assert.AreEqual("`executable-child-group*`\r", description[4]);
+    }
+
+    [Test]
+    public void ReturnsCommandHelpForSingleCommand()
+    {
+        var command = _treeWalker.FindNodes("parameterless");
+        var embed = _formatter.GetCommandHelp(command).Single();
+        
+        Assert.AreEqual("Help for parameterless", embed.Title.Value);
+    }
 }
