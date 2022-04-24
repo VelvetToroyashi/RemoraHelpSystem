@@ -81,15 +81,77 @@ public class FormatterTestCommands : CommandGroup
         public async Task<IResult> StandaloneCommand() => default;
     }
     
-    [Command("executable-group")]
+    [Group("multi-child-group")]
+    public class MultiChildGroup : CommandGroup
+    {
+        [Command("command-1")]
+        public async Task<IResult> Command1() => default;
+        
+        [Command("command-2")]
+        public async Task<IResult> Command2() => default;
+    }
+
+    [Command("parameterless-executable-group")]
     public async Task<IResult> ExecutableGroupCommand() => default;
     
-    [Group("executable-group")]
+    [Group("parameterless-executable-group")]
     public class ExecutableGroup : CommandGroup
     {
         [Command("command")]
         public async Task<IResult> ExecutableCommand() => default;
     }
+    
+    [Command("parameterized-executable-group")]
+    public async Task<IResult> ParameterizedExecutableGroupCommand(string parameter) => default;
+    
+    [Group("parameterized-executable-group")]
+    public class ParameterizedExecutableGroup : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> ParameterizedExecutableCommand(string parameter) => default;
+    }
+    
+    [Command("overloaded-parameterized-executable-group")]
+    public async Task<IResult> OverloadedParameterizedExecutableGroupCommand() => default;
+    
+    [Command("overloaded-parameterized-executable-group")]
+    public async Task<IResult> OverloadedParameterizedExecutableGroupCommand(string parameter) => default;
+    
+    [Group("overloaded-parameterized-executable-group")]
+    public class OverloadedParameterizedExecutableGroup : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> OverloadedParameterizedExecutableCommand(int parameter) => default;
+        
+        [Command("command")]
+        public async Task<IResult> OverloadedParameterizedExecutableCommand(string parameter) => default;
+    }
+    
+    [Command("described-executable-group")]
+    [Description("Command description")]
+    public async Task<IResult> DescribedExecutableGroupCommand() => default;
+    
+    [Group("described-executable-group")]
+    [Description("Group description")]
+    public class DescribedExecutableGroup : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> DescribedExecutableCommand() => default;
+    }
+    
+    [Command("described-executable-group-2")]
+    [Description("Command description")]
+    public async Task<IResult> DescribedExecutableGroup2Command() => default;
+    
+    [Group("described-executable-group-2")]
+    public class DescribedExecutableGroup2 : CommandGroup
+    {
+        [Command("command")]
+        [Description("Command description")]
+        public async Task<IResult> DescribedExecutableCommand() => default;
+    }
+    
+    
     
     [Group("complex-group")]
     public class ComplexGroup : CommandGroup
