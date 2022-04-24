@@ -175,7 +175,6 @@ public class DefaultHelpFormatter : IHelpFormatter
 
             foreach (var parameter in overload.Shape.Parameters)
             {
-                localBuilder.AppendLine();
                 localBuilder.Append(parameter.IsOmissible() ? "[" : "<");
 
                 char? shortName = null;
