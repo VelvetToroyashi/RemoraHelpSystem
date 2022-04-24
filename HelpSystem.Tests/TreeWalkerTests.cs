@@ -139,5 +139,14 @@ public class TreeWalkerTests
         
         Assert.AreEqual(0, command.Count);
     }
+
+    [Test]
+    public void CorrectlySearchesAliases()
+    {
+        var command = _walker.FindNodes("aliased");
+        
+        Assert.AreEqual(1, command.Count);
+        Assert.AreEqual("aliased-command", command[0].Key);
+    }
     
 }
