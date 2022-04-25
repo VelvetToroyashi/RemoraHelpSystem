@@ -9,6 +9,7 @@ using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Conditions;
+using Remora.Discord.Commands.Extensions;
 
 namespace VTP.Remora.Commands.HelpSystem.Services;
 
@@ -20,15 +21,13 @@ public class DefaultHelpFormatter : IHelpFormatter
         var sb = new StringBuilder();
 
         var casted = (CommandNode)command;
-
-        if (!string.IsNullOrEmpty(casted.Shape.Description))
-            sb.AppendLine(casted.Shape.Description);
-        else
-            sb.AppendLine("No description set.");
-
+        var commandArray = new[] {command};
         
-        AddRequiredPermissions(sb, command);
+        AddCommandPath(sb, command);
+        AddCommandAliases(sb, commandArray);
+        AddCommandDescription(sb, commandArray);
         AddCommandUsage(sb, command);
+        AddRequiredPermissions(sb, command);
 
         var embed = GetBaseEmbed() with
         {
@@ -43,7 +42,7 @@ public class DefaultHelpFormatter : IHelpFormatter
     {
         Embed embed = null!;
         
-        var sb = new StringBuilder();
+        var descriptionBuilder = new StringBuilder();
 
         if (subCommands.Count() is 1)
         {
@@ -54,23 +53,18 @@ public class DefaultHelpFormatter : IHelpFormatter
             }
             else
             {
-                sb.AppendLine((pn as GroupNode).Description ?? "No description provided.");
-                sb.AppendLine();
+                var groupedChildren = pn.Children.GroupBy(x => x.Key);
+
+                AddCommandPath(descriptionBuilder, pn as IChildNode);
+                AddCommandAliases(descriptionBuilder, subCommands);
+                AddCommandDescription(descriptionBuilder, subCommands);
+                AddSubCommands(groupedChildren);
+                AddRequiredPermissions(descriptionBuilder, pn as IChildNode);
                 
-                var grouped = pn.Children.GroupBy(x => x.Key);
-
-                foreach (var command in grouped)
-                {
-                    if (command.Count() > 1 && command.Any(sc => sc is IParentNode))
-                        sb.AppendLine($"`{command.Key}*`");
-                    else
-                        sb.AppendLine($"`{command.Key}`");
-                }
-
                 embed = GetBaseEmbed() with
                 {
                     Title = $"Showing sub-command help for {subCommands.Single().Key}",
-                    Description = sb.ToString()
+                    Description = descriptionBuilder.ToString()
                 };
 
                 yield return embed;
@@ -78,7 +72,7 @@ public class DefaultHelpFormatter : IHelpFormatter
             }
         }
         
-        // Bug: Callee may pass children of a group, or the group itself.
+        // Bug: Caller may pass children of a group, or the group itself.
         // We only support the latter in this implementation, but this is not
         // clearly documented. TODO: Add add check for naming??
         if (!subCommands.OfType<IParentNode>().Any())
@@ -103,31 +97,40 @@ public class DefaultHelpFormatter : IHelpFormatter
         // This makes the assumption that there are no overloaded groups,
         // which is impossible to do without backtracking anwyay.
         var executable = subCommands.Where(sc => sc is not IParentNode).Cast<CommandNode>();
-
-        sb.AppendLine(group.GetDescription() ?? executable.FirstOrDefault(cn => cn.Shape.Description is not null)?.Shape.Description ?? "No description set.");
-        sb.AppendLine();
         
-        AddGroupCommandUsage(sb, executable);
-
         var gsc = group.Children.GroupBy(x => x.Key);
         
-        foreach (var scGroup in gsc)
-        {
-            if (scGroup.Count() > 1 && scGroup.Any(sc => sc is IParentNode))
-                sb.AppendLine($"`{scGroup.Key}*`");
-            else 
-                sb.AppendLine($"`{scGroup.Key}`");
-        }
+        AddCommandPath(descriptionBuilder, group);
+        AddCommandAliases(descriptionBuilder, subCommands);
+        AddCommandDescription(descriptionBuilder, subCommands);
+        AddGroupCommandUsage(descriptionBuilder, executable);
+        AddSubCommands(gsc);
+        AddRequiredPermissions(descriptionBuilder, group);
         
         embed = GetBaseEmbed() with
         {
-            Title = $"Showing sub-command help for {(group as IChildNode).Key}",
-            Description = sb.ToString()
+            Title = $"Showing sub-command help for {group.Key}",
+            Description = descriptionBuilder.ToString()
         };
         
         yield return embed;
 
         yield break;
+
+        void AddSubCommands(IEnumerable<IGrouping<string, IChildNode>> grouped)
+        {
+            descriptionBuilder.AppendLine("**Sub-commands**");
+
+            foreach (var command in grouped)
+            {
+                if (command.Count() > 1 && command.Any(sc => sc is IParentNode))
+                    descriptionBuilder.AppendLine($"`{command.Key}*`");
+                else
+                    descriptionBuilder.AppendLine($"`{command.Key}`");
+            }
+            
+            descriptionBuilder.AppendLine();
+        }
     }
     
     public IEnumerable<IEmbed> GetTopLevelHelpEmbeds(IEnumerable<IGrouping<string, IChildNode>> commands)
@@ -160,21 +163,29 @@ public class DefaultHelpFormatter : IHelpFormatter
     {
         var casted = overloads.Cast<CommandNode>().ToArray();
         
+        builder.AppendLine("**Usage**");
+        
         builder.Append($"This group can be executed like a command");
 
         if (casted.Any(ol => !ol.Shape.Parameters.Any()))
             builder.Append(" without parameters");
         
-        builder.Append(".\n");
+        builder.AppendLine(".");
 
         foreach (var overload in casted)
         {
             if (!overload.Shape.Parameters.Any())
                 continue;
 
+            builder.AppendLine();
+            
             var localBuilder = new StringBuilder();
-
+            
             localBuilder.Append('`');
+
+            AddCommandPath(localBuilder, overload, false);
+            
+            localBuilder.Append(' ');
 
             foreach (var parameter in overload.Shape.Parameters)
             {
@@ -235,16 +246,20 @@ public class DefaultHelpFormatter : IHelpFormatter
             localBuilder[^1] = '`';
             
             builder.AppendLine(localBuilder.ToString());
-            builder.AppendLine();
+
 
             localBuilder.Clear();
         }
+        
+        builder.AppendLine();
     }
     
     private void AddCommandUsage(StringBuilder builder, IChildNode command)
     {
         if (command is not CommandNode cn)
             return;
+
+        builder.AppendLine("**Usage**");
 
         if (!cn.Shape.Parameters.Any())
         {
@@ -254,7 +269,6 @@ public class DefaultHelpFormatter : IHelpFormatter
         
         foreach (var parameter in cn.Shape.Parameters)
         {
-            builder.AppendLine();
             builder.Append(parameter.IsOmissible() ? "`[" : "`<");
 
             char? shortName = null;
@@ -307,17 +321,127 @@ public class DefaultHelpFormatter : IHelpFormatter
                 builder.Append(">`");
             
             builder.AppendLine($" {(string.IsNullOrEmpty(parameter.Description) ? "No description" : parameter.Description)}");
-        }        
+            builder.AppendLine();
+        }
+    }
+
+    private void AddCommandAliases(StringBuilder builder, IEnumerable<IChildNode> commands)
+    {
+        var aliases = commands.SelectMany(c => c.Aliases);
+
+        builder.AppendLine("**Aliases**");
+
+        if (!aliases.Any())
+        {
+            builder.AppendLine("No aliases set.");
+            builder.AppendLine();
+            return;
+        }
+        
+        builder.AppendLine(string.Join(", ", aliases));
+        builder.AppendLine();
     }
 
     private void AddRequiredPermissions(StringBuilder builder, IChildNode node)
     {
-        if (node is not CommandNode cn)
+        RequireDiscordPermissionAttribute rpa = null;
+
+        if (node is GroupNode gn)
+        {
+            if (!gn.Children.Any())
+                return;
+
+            if (gn.Children.All(child => child is IParentNode))
+                return; // Don't feel like traversing the tree deeper, so just bail.
+            
+            rpa = (gn.Children.First(child => child is CommandNode) as CommandNode).FindCustomAttributeOnLocalTree<RequireDiscordPermissionAttribute>();
+
             return;
+        }
+
+        if (node is CommandNode cn)
+            rpa = cn.FindCustomAttributeOnLocalTree<RequireDiscordPermissionAttribute>();
         
-        if ((cn.GroupType.GetCustomAttribute<RequireDiscordPermissionAttribute>() ??
-            cn.CommandMethod.GetCustomAttribute<RequireDiscordPermissionAttribute>()) is {} rpa)
-            builder.AppendLine($"This command requires the following permissions: {string.Join(", ", rpa.Permissions)}");
+        if (rpa is null)
+            return;
+
+        builder.AppendLine($"This command requires the following permissions: {string.Join(", ", rpa.Permissions)}");
+        
+        builder.AppendLine();
     }
 
+    private void AddCommandPath(StringBuilder builder, IChildNode node, bool appendPath = true)
+    {
+        var path = new List<string>();
+        
+        path.Add(node.Key);
+        IParentNode parent = null;
+
+        do
+        {
+            if (parent is not RootNode)
+                parent = node.Parent;
+            
+            path.Add((parent as IChildNode)?.Key);
+        } 
+        while (parent is not (null or RootNode));
+        
+        path.Reverse();
+
+        if (!appendPath)
+        {
+            builder.Append(string.Join(' ', path).TrimStart());
+        }
+        else
+        {
+            builder.AppendLine($"**Path**\n`{string.Join(" ", path).TrimStart()}`");
+            builder.AppendLine();
+        }
+
+    }
+
+    private void AddCommandDescription(StringBuilder builder, IEnumerable<IChildNode> nodes)
+    {
+        builder.AppendLine("**Description**");
+        
+        if (nodes.Count() is 1)
+        {
+            if (nodes.First() is CommandNode cn)
+            {
+                if (string.IsNullOrEmpty(cn.Shape.Description))
+                    builder.AppendLine("No description set.");
+                else 
+                    builder.AppendLine(cn.Shape.Description);
+            }
+            else if (nodes is GroupNode gn)
+            {
+                builder.AppendLine(gn.GetDescription() ?? "No description set.");
+            }
+        }
+        else
+        {
+            if (nodes.FirstOrDefault(n => n is GroupNode) is GroupNode fgn)
+            {
+                var description = fgn.GetDescription() ??
+                                  nodes.OfType<CommandNode>()
+                                      .FirstOrDefault(cn => cn.Shape.Description is not null)?.Shape.Description ??
+                                  "No description set.";
+           
+                builder.AppendLine(description);
+            }
+            else
+            {
+                var description = nodes
+                                      .Cast<CommandNode>()
+                                      .FirstOrDefault(cn => cn.Shape.Description is not null)?
+                                      .Shape
+                                      .Description ??
+                                  "No description set.";
+            
+                builder.AppendLine(description);
+            }
+        }
+        
+        builder.AppendLine();
+    }
 }

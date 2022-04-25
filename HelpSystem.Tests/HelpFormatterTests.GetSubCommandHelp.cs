@@ -42,7 +42,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`command`\r", description[2]);
+        Assert.AreEqual("`command`\r", description[9]);
     }
 
     [Test]
@@ -54,8 +54,8 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
 
-        Assert.AreEqual("`command-1`\r", description[2]);
-        Assert.AreEqual("`command-2`\r", description[3]);
+        Assert.AreEqual("`command-1`\r", description[9]);
+        Assert.AreEqual("`command-2`\r", description[10]);
     }
 
     [Test]
@@ -67,7 +67,7 @@ public partial class HelpFormatterTests
 
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This group can be executed like a command without parameters.", description[2]);
+        Assert.AreEqual("This group can be executed like a command without parameters.\r", description[10]);
     }
     
     [Test]
@@ -79,9 +79,9 @@ public partial class HelpFormatterTests
 
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This group can be executed like a command.", description[2]);
+        Assert.AreEqual("This group can be executed like a command.\r", description[10]);
         
-        Assert.AreEqual("`<parameter>`\r", description[3]);
+        Assert.AreEqual("`parameterized-executable-group <parameter>`\r", description[12]);
     }
     
     [Test]
@@ -93,9 +93,9 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This group can be executed like a command without parameters.", description[2]);
+        Assert.AreEqual("This group can be executed like a command without parameters.\r", description[10]);
         
-        Assert.AreEqual("`<parameter>`\r", description[3]);
+        Assert.AreEqual("`overloaded-parameterized-executable-group <parameter>`\r", description[12]);
     }
 
     [Test]
@@ -107,9 +107,9 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This group can be executed like a command.", description[2]);
+        Assert.AreEqual("This group can be executed like a command.\r", description[10]);
         
-        Assert.AreEqual("`<-o parameter>`\r", description[3]);
+        Assert.AreEqual("`parameterized-executable-group-with-option <-o parameter>`\r", description[12]);
     }
     
     [Test]
@@ -121,9 +121,9 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This group can be executed like a command.", description[2]);
+        Assert.AreEqual("This group can be executed like a command.\r", description[10]);
         
-        Assert.AreEqual("`[-s]`\r", description[3]);
+        Assert.AreEqual("`parameterized-executable-group-with-switch [-s]`\r", description[12]);
     }
 
     [Test]
@@ -135,7 +135,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("Group description\r", description[0]);
+        Assert.AreEqual("Group description\r", description[7]);
     }
 
     [Test]
@@ -147,7 +147,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("Command description\r", description[0]);
+        Assert.AreEqual("Command description\r", description[7]);
     }
     
     [Test]
@@ -159,7 +159,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("No description set.\r", description[0]);
+        Assert.AreEqual("No description set.\r", description[7]);
     }
 
     [Test]
@@ -171,9 +171,9 @@ public partial class HelpFormatterTests
         
         var description = embeds.Description.Value.Split('\n');
         
-        Assert.AreEqual("`command`\r", description[2]);
-        Assert.AreEqual("`overload`\r", description[3]);
-        Assert.AreEqual("`nested-executable-group*`\r", description[4]);
+        Assert.AreEqual("`command`\r", description[9]);
+        Assert.AreEqual("`overload`\r", description[10]);
+        Assert.AreEqual("`nested-executable-group*`\r", description[11]);
     }
     
     [Test]
@@ -185,8 +185,8 @@ public partial class HelpFormatterTests
         
         var description = embeds.Description.Value.Split('\n');
         
-        Assert.AreEqual("`command`\r", description[3]);
-        Assert.AreEqual("`executable-child-group*`\r", description[4]);
+        Assert.AreEqual("`command`\r", description[13]);
+        Assert.AreEqual("`executable-child-group*`\r", description[14]);
     }
 
     [Test]

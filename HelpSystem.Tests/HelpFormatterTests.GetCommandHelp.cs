@@ -24,7 +24,7 @@ public partial class HelpFormatterTests
 
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This command can be used without any parameters.\r", description[1]);
+        Assert.AreEqual("This command can be used without any parameters.\r", description[10]);
     }
     
     [Test]
@@ -36,7 +36,7 @@ public partial class HelpFormatterTests
 
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<parameter>` No description set.\r", description[2]);
+        Assert.AreEqual("`<parameter>` No description set.\r", description[10]);
     }
 
     [Test]
@@ -48,7 +48,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[parameter]` No description set.\r", description[2]);
+        Assert.AreEqual("`[parameter]` No description set.\r", description[10]);
     }
 
     [Test]
@@ -60,7 +60,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<parameter>` description\r", description[2]);
+        Assert.AreEqual("`<parameter>` description\r", description[10]);
     }
 
     [Test]
@@ -72,8 +72,8 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<parameter1>` No description set.\r", description[2]);
-        Assert.AreEqual("`<parameter2>` No description set.\r", description[4]);
+        Assert.AreEqual("`<parameter1>` No description set.\r", description[10]);
+        Assert.AreEqual("`<parameter2>` No description set.\r", description[12]);
     }
     
     [Test]
@@ -85,8 +85,8 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<parameter1>` No description set.\r", description[2]);
-        Assert.AreEqual("`[parameter2]` No description set.\r", description[4]);
+        Assert.AreEqual("`<parameter1>` No description set.\r", description[10]);
+        Assert.AreEqual("`[parameter2]` No description set.\r", description[12]);
     }
 
     [Test]
@@ -98,7 +98,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<-o parameter>` No description set.\r", description[2]);
+        Assert.AreEqual("`<-o parameter>` No description set.\r", description[10]);
     }
     
     [Test]
@@ -110,7 +110,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<--option parameter>` No description set.\r", description[2]);
+        Assert.AreEqual("`<--option parameter>` No description set.\r", description[10]);
     }
     
     [Test]
@@ -122,7 +122,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`<-o/--option parameter>` No description set.\r", description[2]);
+        Assert.AreEqual("`<-o/--option parameter>` No description set.\r", description[10]);
     }
     
     [Test]
@@ -134,7 +134,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[-o parameter]` No description set.\r", description[2]);
+        Assert.AreEqual("`[-o parameter]` No description set.\r", description[10]);
     }
     
     [Test]
@@ -146,7 +146,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[--option parameter]` No description set.\r", description[2]);
+        Assert.AreEqual("`[--option parameter]` No description set.\r", description[10]);
     }
     
     [Test]
@@ -158,7 +158,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[-o/--option parameter]` No description set.\r", description[2]);
+        Assert.AreEqual("`[-o/--option parameter]` No description set.\r", description[10]);
     }
     
     [Test]
@@ -170,7 +170,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[-s]` No description set.\r", description[2]);
+        Assert.AreEqual("`[-s]` No description set.\r", description[10]);
     }
     
     [Test]
@@ -182,7 +182,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[--switch]` No description set.\r", description[2]);
+        Assert.AreEqual("`[--switch]` No description set.\r", description[10]);
     }
     
     [Test]
@@ -194,7 +194,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("`[-s/--switch]` No description set.\r", description[2]);
+        Assert.AreEqual("`[-s/--switch]` No description set.\r", description[10]);
     }
     
     [Test]
@@ -206,7 +206,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("No description set.\r", description[0]);
+        Assert.AreEqual("No description set.\r", description[7]);
     }
 
     [Test]
@@ -218,7 +218,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("Descriptioned command\r", description[0]);
+        Assert.AreEqual("Descriptioned command\r", description[7]);
     }
     
     [Test]
@@ -230,7 +230,7 @@ public partial class HelpFormatterTests
         
         var description = embed.Description.Value.Split('\n');
         
-        Assert.AreEqual("This command requires the following permissions: SendMessages\r", description[1]);
+        Assert.AreEqual("This command requires the following permissions: SendMessages\r", description[^3]);
     }
 
     [Test]
