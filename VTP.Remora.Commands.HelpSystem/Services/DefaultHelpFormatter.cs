@@ -71,10 +71,15 @@ public class DefaultHelpFormatter : IHelpFormatter
                 yield break;
             }
         }
-        
-        // Bug: Caller may pass children of a group, or the group itself.
-        // We only support the latter in this implementation, but this is not
-        // clearly documented. TODO: Add add check for naming??
+
+        // We're looking at a group's children; recall with the group
+        // since we have special handling for this case.
+        if (subCommands.First().Parent.Children.SequenceEqual(subCommands))
+        {
+            yield return GetCommandHelp(new[] { subCommands.First().Parent as IChildNode }).Single();
+            yield break;
+        }
+
         if (!subCommands.OfType<IParentNode>().Any())
         {
             var sca = subCommands.ToArray();
@@ -84,6 +89,7 @@ public class DefaultHelpFormatter : IHelpFormatter
 
             yield break;
         }
+        
         
         // If we need to deal with overloaded groups, it's actually pretty simple.
         // var children = subCommands.OfType<IParentNode>().SelectMany(x => x.Children);
