@@ -16,5 +16,5 @@ public class HelpSystemOptions
     /// <summary>
     /// Whether or not to show commands regardless of if their conditions have been met.
     /// </summary>
-    private bool AlwaysShowCommands { get; set; }
+    public bool AlwaysShowCommands { get; set; }
 }
