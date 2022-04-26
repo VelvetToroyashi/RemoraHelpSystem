@@ -71,15 +71,15 @@ public class DefaultHelpFormatter : IHelpFormatter
                 yield break;
             }
         }
-
+        
         // We're looking at a group's children; recall with the group
         // since we have special handling for this case.
-        if (subCommands.First().Parent.Children.SequenceEqual(subCommands))
+        if (subCommands.DistinctBy(sc => sc.Key).Count() == subCommands.Count())
         {
             yield return GetCommandHelp(new[] { subCommands.First().Parent as IChildNode }).Single();
             yield break;
         }
-
+        
         if (!subCommands.OfType<IParentNode>().Any())
         {
             var sca = subCommands.ToArray();
@@ -89,7 +89,6 @@ public class DefaultHelpFormatter : IHelpFormatter
 
             yield break;
         }
-        
         
         // If we need to deal with overloaded groups, it's actually pretty simple.
         // var children = subCommands.OfType<IParentNode>().SelectMany(x => x.Children);
@@ -262,8 +261,7 @@ public class DefaultHelpFormatter : IHelpFormatter
     
     private void AddCommandUsage(StringBuilder builder, IChildNode command)
     {
-        if (command is not CommandNode cn)
-            return;
+        var cn = (CommandNode)command;
 
         builder.AppendLine("**Usage**");
 
