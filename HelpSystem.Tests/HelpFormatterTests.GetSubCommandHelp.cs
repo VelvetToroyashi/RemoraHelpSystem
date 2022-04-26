@@ -197,4 +197,14 @@ public partial class HelpFormatterTests
         
         Assert.AreEqual("Help for parameterless", embed.Title.Value);
     }
+
+    [Test]
+    public void ShowsSubcommandHelpWhenGivenGroupChildren()
+    {
+        var command = (_treeWalker.FindNodes("multi-child-group").First() as IParentNode).Children;
+        
+        var embed = _formatter.GetCommandHelp(command).Single();
+        Assert.AreEqual("Showing sub-command help for multi-child-group", embed.Title.Value);
+
+    }
 }
