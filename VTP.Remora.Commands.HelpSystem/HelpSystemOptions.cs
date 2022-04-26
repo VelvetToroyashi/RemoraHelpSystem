@@ -6,6 +6,6 @@ namespace VTP.Remora.Commands.HelpSystem;
 /// Options related to the command help system.
 /// </summary>
 /// <param name="TreeName">The tree to search when looking for commands.</param>
-/// <param name="DisplayMode">See <see cref="HelpConditionDisplayMode"/>; defaults to <see cref="HelpConditionDisplayMode.HideAll"/></param>
+/// <param name="DisplayMode">Whether or not to show commands regardless of if their conditions have been met.</param>
 [ExcludeFromCodeCoverage]
-public record HelpSystemOptions(string? TreeName, HelpConditionDisplayMode DisplayMode = HelpConditionDisplayMode.HideAll);
+public record HelpSystemOptions(string? TreeName, bool AlwaysShowCommands = false);
