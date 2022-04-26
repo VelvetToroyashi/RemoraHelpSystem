@@ -20,10 +20,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="HelpFormatterTests.GetCommandHelp.cs">
+      <Compile Update="CommandHelp.cs">
         <DependentUpon>HelpFormatterTests.cs</DependentUpon>
       </Compile>
-      <Compile Update="HelpFormatterTests.GetSubCommandHelp.cs">
+      <Compile Update="SubCommandHelp.cs">
         <DependentUpon>HelpFormatterTests.cs</DependentUpon>
       </Compile>
     </ItemGroup>
