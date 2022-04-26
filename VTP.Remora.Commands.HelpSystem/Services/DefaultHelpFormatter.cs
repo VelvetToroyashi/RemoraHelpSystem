@@ -385,8 +385,7 @@ public class DefaultHelpFormatter : IHelpFormatter
 
         do
         {
-            if (parent is not RootNode)
-                parent = node.Parent;
+            parent = (parent as IChildNode)?.Parent;
             
             path.Add((parent as IChildNode)?.Key);
         } 
@@ -396,11 +395,11 @@ public class DefaultHelpFormatter : IHelpFormatter
 
         if (!appendPath)
         {
-            builder.Append(string.Join(' ', path).TrimStart());
+            builder.Append(string.Join(' ', path).Trim());
         }
         else
         {
-            builder.AppendLine($"**Path**\n`{string.Join(" ", path).TrimStart()}`");
+            builder.AppendLine($"**Path**\n`{string.Join(" ", path).Trim()}`");
             builder.AppendLine();
         }
 
