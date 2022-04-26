@@ -88,7 +88,10 @@ public class CommandHelpService : ICommandHelpService
                 conditions = conditions.Union(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
 
             if (!conditions.Any())
+            {
+                successfulNodes.Add(node);
                 continue;
+            }
 
             foreach (var setCondition in conditions)
             {
