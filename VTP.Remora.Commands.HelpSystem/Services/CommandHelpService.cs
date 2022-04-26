@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Remora.Commands.Conditions;
+using Remora.Commands.Results;
 using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
+using Remora.Discord.Commands.Results;
 using Remora.Rest.Core;
 using Remora.Results;
 
@@ -38,6 +42,17 @@ public class CommandHelpService : ICommandHelpService
     {
         var nodes = _treeWalker.FindNodes(commandName, treeName);
 
+        if (!_options.AlwaysShowCommands)
+        {
+            var nodeConditionResult = await EvaluateNodeConditionsAsync(nodes);
+
+            if (!nodeConditionResult.IsSuccess)
+                return Result.FromError(nodeConditionResult.Error);
+            
+            if (!string.IsNullOrEmpty(commandName) && nodeConditionResult.Entity.Count() < nodes.Count())
+                return Result.FromError(new ConditionNotSatisfiedError("One or more conditions were not satisfied."));
+        }
+        
         if (!nodes.Any())
             return Result.FromError(new NotFoundError($"No command with the name \"{commandName}\" was found."));
 
@@ -59,5 +74,52 @@ public class CommandHelpService : ICommandHelpService
         var sendResult = await _channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
 
         return sendResult.IsSuccess ? Result.FromSuccess() : Result.FromError(sendResult.Error);
+    }
+    
+    public async Task<Result<IEnumerable<IChildNode>>> EvaluateNodeConditionsAsync(IReadOnlyList<IChildNode> nodes)
+    {
+        var successfulNodes = new HashSet<IChildNode>();
+
+        foreach (var node in nodes)
+        {
+            var conditions = node.GetType().GetCustomAttributes<ConditionAttribute>();
+
+            if (node is CommandNode cn)
+                conditions = conditions.Union(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
+
+            if (!conditions.Any())
+                continue;
+
+            foreach (var setCondition in conditions)
+            {
+                var conditionType = typeof(ICondition<>).MakeGenericType(setCondition.GetType());
+                var conditionMethod = conditionType.GetMethod(nameof(ICondition<ConditionAttribute>.CheckAsync));
+                
+                var conditionServices = _services
+                                        .GetServices(conditionType)
+                                        .Where(c => c is not null)
+                                        .Cast<ICondition>()
+                                        .ToArray();
+                
+                if (!conditionServices.Any())
+                    return new InvalidOperationError($"Command was marked with \"{conditionType.Name}\", but no service was registered to handle it.");
+
+                foreach (var condition in conditionServices)
+                {
+                    var result = await (ValueTask<Result>) conditionMethod.Invoke(condition, new object[] {setCondition, CancellationToken.None});
+
+                    if (result.IsSuccess)
+                    {
+                        successfulNodes.Add(node);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return Result<IEnumerable<IChildNode>>.FromSuccess(successfulNodes);
     }
 }
