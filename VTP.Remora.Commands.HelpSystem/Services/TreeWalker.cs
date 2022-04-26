@@ -33,15 +33,16 @@ public class TreeWalker
         // For loop would probably be more efficient, but I like the idea of popping
         // tokens off a stack. Small perf diff; barely even noticeable.
 
-        if (!GetNextToken(out var current))
-            throw new InvalidOperationException("Empty stack pushed!");
+        GetNextToken(out var current);
 
         IParentNode? next = null;
         
         foreach (var child in parent.Children)
         {
-            if (child.Key.Equals(current, StringComparison.OrdinalIgnoreCase) ||
-                child.Aliases.Contains(current, StringComparer.OrdinalIgnoreCase))
+            if (
+                child.Key.Equals(current, StringComparison.OrdinalIgnoreCase) ||
+                child.Aliases.Contains(current, StringComparer.OrdinalIgnoreCase)
+               )
             {
                 if (TokensRemain())
                 {
@@ -55,7 +56,6 @@ public class TreeWalker
                 yield return child;
                 continue;
             }
-
         }
         
         if (!TokensRemain() || next is null)
