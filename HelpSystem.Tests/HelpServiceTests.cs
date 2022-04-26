@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using Remora.Commands.Extensions;
@@ -12,6 +13,7 @@ using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Rest.Core;
 using Remora.Results;
+using VTP.Remora.Commands.HelpSystem;
 using VTP.Remora.Commands.HelpSystem.Services;
 
 namespace HelpSystem.Tests;
@@ -33,6 +35,7 @@ public class HelpServiceTests
             .Finish()
             .AddSingleton(Mock.Of<IDiscordRestChannelAPI>())
             .AddScoped<TreeWalker>()
+            .Configure<HelpSystemOptions>(_ => { })
             .AddScoped<CommandHelpService>()
             .BuildServiceProvider();
         
@@ -57,18 +60,16 @@ public class HelpServiceTests
             .Setup(fm => fm.GetTopLevelHelpEmbeds(It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Top Level Commands"} });
 
-        var channelMock = new Mock<IDiscordRestChannelAPI>();
-        
         var services = new ServiceCollection()
             .AddSingleton(formatterMock.Object)
-            .AddSingleton(channelMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
         (
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
-            _serviceProvider.GetRequiredService<IDiscordRestChannelAPI>()
+            _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, string.Empty);
@@ -87,18 +88,16 @@ public class HelpServiceTests
             .Setup(fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
-        var channelMock = new Mock<IDiscordRestChannelAPI>();
-        
         var services = new ServiceCollection()
             .AddSingleton(formatterMock.Object)
-            .AddSingleton(channelMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
         (
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
-            _serviceProvider.GetRequiredService<IDiscordRestChannelAPI>()
+            _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "group");
@@ -123,18 +122,16 @@ public class HelpServiceTests
             .Setup(fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
         
-        var channelMock = new Mock<IDiscordRestChannelAPI>();
-        
         var services = new ServiceCollection()
             .AddSingleton(formatterMock.Object)
-            .AddSingleton(channelMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
         (
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
-            _serviceProvider.GetRequiredService<IDiscordRestChannelAPI>()
+            _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "executable-group");
@@ -165,18 +162,16 @@ public class HelpServiceTests
             .Setup(fm => fm.GetCommandHelp(It.IsAny<IChildNode>()))
             .Returns( new Embed() { Title = "Showing single command" } );
         
-        var channelMock = new Mock<IDiscordRestChannelAPI>();
-        
         var services = new ServiceCollection()
             .AddSingleton(formatterMock.Object)
-            .AddSingleton(channelMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
         (
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
-            _serviceProvider.GetRequiredService<IDiscordRestChannelAPI>()
+            _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "command");
@@ -198,19 +193,17 @@ public class HelpServiceTests
         formatterMock
             .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string,IChildNode>>>()))
             .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
-        
-        var channelMock = new Mock<IDiscordRestChannelAPI>();
-        
+
         var services = new ServiceCollection()
             .AddSingleton(formatterMock.Object)
-            .AddSingleton(channelMock.Object)
             .BuildServiceProvider();
 
         var help = new CommandHelpService
         (
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
-            services.GetRequiredService<IDiscordRestChannelAPI>()
+            _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "overload");
@@ -239,7 +232,8 @@ public class HelpServiceTests
         (
             _serviceProvider.GetRequiredService<TreeWalker>(),
             new ServiceCollection().BuildServiceProvider(),
-            _serviceProvider.GetRequiredService<IDiscordRestChannelAPI>()
+            _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "command");

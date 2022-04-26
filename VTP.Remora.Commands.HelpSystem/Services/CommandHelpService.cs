@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
@@ -15,12 +16,21 @@ public class CommandHelpService : ICommandHelpService
 {
     private readonly TreeWalker _treeWalker;
     private readonly IServiceProvider _services;
+    private readonly HelpSystemOptions _options;
     private readonly IDiscordRestChannelAPI _channels;
     
-    public CommandHelpService(TreeWalker treeWalker, IServiceProvider services, IDiscordRestChannelAPI channels)
+    
+    public CommandHelpService
+    (
+        TreeWalker treeWalker,
+        IServiceProvider services,
+        IOptions<HelpSystemOptions> options,
+        IDiscordRestChannelAPI channels
+    )
     {
         _treeWalker = treeWalker;
         _services   = services;
+        _options    = options.Value;
         _channels   = channels;
     }
 

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Remora.Commands.Extensions;
 using Remora.Discord.Commands.Extensions;
 using VTP.Remora.Commands.HelpSystem.Services;
@@ -11,7 +12,7 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddHelpSystem(this IServiceCollection services, string? treeName = null, bool addHelpCommand = true)
     {
-        services.Configure<HelpSystemOptions>(o => o = o with { TreeName = treeName });
+        services.Configure<HelpSystemOptions>(o => o.TreeName = treeName);
 
         if (addHelpCommand)
         {
@@ -22,10 +23,10 @@ public static class IServiceCollectionExtensions
                 .Finish();
         }
 
-        services.AddScoped<TreeWalker>();
+        services.TryAddScoped<TreeWalker>();
 
-        services.AddScoped<IHelpFormatter, DefaultHelpFormatter>();
-        services.AddScoped<ICommandHelpService, CommandHelpService>();
+        services.TryAddScoped<IHelpFormatter, DefaultHelpFormatter>();
+        services.TryAddScoped<ICommandHelpService, CommandHelpService>();
         
         return services;
     }

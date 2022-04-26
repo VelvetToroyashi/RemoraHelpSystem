@@ -196,7 +196,7 @@ public class FormatterTestCommands : CommandGroup
     
     [Command("executable-group-with-executable-children")]
     public async Task<IResult> ExecutableGroupWithExecutableChildrenCommand() => default;
-    
+
     [Group("executable-group-with-executable-children")]
     public class ExecutableGroupWithExecutableChildren : CommandGroup
     {
