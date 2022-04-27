@@ -85,7 +85,10 @@ public class CommandHelpService : ICommandHelpService
             var conditions = new List<ConditionAttribute>();
 
             if (node is CommandNode cn)
+            {
+                conditions.AddRange(cn.GroupType.GetCustomAttributes<ConditionAttribute>());
                 conditions.AddRange(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
+            }
             
             if (node is GroupNode gn)
                 conditions.AddRange(gn.GroupTypes.SelectMany(gt => gt.GetCustomAttributes<ConditionAttribute>()));
