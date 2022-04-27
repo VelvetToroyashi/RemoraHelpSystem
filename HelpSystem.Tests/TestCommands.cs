@@ -68,6 +68,7 @@ public class TestCommands : CommandGroup
 }
 
 [Group("group2")]
+[ExcludeFromCodeCoverage]
 public class TestCommands2 : CommandGroup
 {
     [Command("command")]
@@ -75,6 +76,7 @@ public class TestCommands2 : CommandGroup
 }
 
 [Group("group2")]
+[ExcludeFromCodeCoverage]
 [RequireDiscordPermission(DiscordPermission.Administrator)]
 public class TestCommands3 : CommandGroup
 {
