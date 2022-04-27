@@ -2,6 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
+using Remora.Discord.API.Abstractions.Objects;
+using Remora.Discord.Commands.Conditions;
 using Remora.Results;
 
 namespace HelpSystem.Tests;
@@ -12,12 +14,23 @@ public class TestCommands : CommandGroup
     [Command("command")]
     public async Task<IResult> Command() => default;
     
-    
     [Command("overload")]
     public async Task<IResult> Overload(string arg) => default;
     
     [Command("overload")]
     public async Task<IResult> Overload(int arg) => default;
+    
+    [Command("conditioned")]
+    [RequireDiscordPermission(DiscordPermission.Administrator)]
+    public async Task<IResult> Conditioned() => default;
+    
+    [Group("conditioned-group")]
+    [RequireDiscordPermission(DiscordPermission.Administrator)]
+    public class ConditionedGroup : CommandGroup
+    {
+        [Command("command")]
+        public async Task<IResult> Command() => default;
+    }
     
     [Command("aliased-command", "aliased")]
     public async Task<IResult> AliasedCommand() => default;
@@ -52,4 +65,19 @@ public class TestCommands : CommandGroup
             public async Task<IResult> Command() => default;
         }
     }
+}
+
+[Group("group2")]
+public class TestCommands2 : CommandGroup
+{
+    [Command("command")]
+    public async Task<IResult> Command() => default;
+}
+
+[Group("group2")]
+[RequireDiscordPermission(DiscordPermission.Administrator)]
+public class TestCommands3 : CommandGroup
+{
+    [Command("command")]
+    public async Task<IResult> Command() => default;
 }

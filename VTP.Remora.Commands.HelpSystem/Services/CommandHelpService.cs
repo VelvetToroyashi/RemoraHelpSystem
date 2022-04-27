@@ -82,10 +82,13 @@ public class CommandHelpService : ICommandHelpService
 
         foreach (var node in nodes)
         {
-            var conditions = node.GetType().GetCustomAttributes<ConditionAttribute>();
+            var conditions = new List<ConditionAttribute>();
 
             if (node is CommandNode cn)
-                conditions = conditions.Union(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
+                conditions.AddRange(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
+            
+            if (node is GroupNode gn)
+                conditions.AddRange(gn.GroupTypes.SelectMany(gt => gt.GetCustomAttributes<ConditionAttribute>()));
 
             if (!conditions.Any())
             {

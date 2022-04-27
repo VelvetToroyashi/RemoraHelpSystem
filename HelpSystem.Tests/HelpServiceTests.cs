@@ -1,16 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using Remora.Commands.Conditions;
 using Remora.Commands.Extensions;
+using Remora.Commands.Results;
 using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
+using Remora.Discord.Commands.Conditions;
+using Remora.Discord.Commands.Results;
 using Remora.Rest.Core;
 using Remora.Results;
 using VTP.Remora.Commands.HelpSystem;
@@ -35,7 +40,7 @@ public class HelpServiceTests
             .Finish()
             .AddSingleton(Mock.Of<IDiscordRestChannelAPI>())
             .AddScoped<TreeWalker>()
-            .Configure<HelpSystemOptions>(_ => { })
+            .Configure<HelpSystemOptions>(h => h.AlwaysShowCommands = true)
             .AddScoped<CommandHelpService>()
             .BuildServiceProvider();
         
@@ -240,6 +245,88 @@ public class HelpServiceTests
         
         Assert.IsFalse(result.IsSuccess);
         Assert.IsInstanceOf<InvalidOperationError>(result.Error);
+    }
+
+    [Test]
+    public async Task UnregisteredConditionReturnsError()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
+            .BuildServiceProvider();
+        
+        var help = new CommandHelpService
+        (
+            _serviceProvider.GetRequiredService<TreeWalker>(),
+            services,
+            services.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
+        );
+        
+        var result = await help.ShowHelpAsync(_channelID, "conditioned");
+        
+        Assert.IsFalse(result.IsSuccess);
+        
+        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
+    }
+    
+    [Test]
+    public async Task UnregisteredGroupReturnsError()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
+            .BuildServiceProvider();
+        
+        var help = new CommandHelpService
+        (
+            _serviceProvider.GetRequiredService<TreeWalker>(),
+            services,
+            services.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
+        );
+        
+        var result = await help.ShowHelpAsync(_channelID, "conditioned-group");
+        
+        Assert.IsFalse(result.IsSuccess);
+        
+        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
+    }
+
+    [Test]
+    public async Task CorrectlyChecksMultiTypeGroupConditions()
+    {
+        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        
+        conditionMock
+            .Setup(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+
+        var services = new ServiceCollection()
+            .AddCommands()
+            .AddCommandTree()
+            .WithCommandGroup<TestCommands2>()
+            .WithCommandGroup<TestCommands3>()
+            .Finish()
+            .AddSingleton<TreeWalker>()
+            .AddSingleton(conditionMock.Object)
+            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
+            .BuildServiceProvider();
+
+        var help = new CommandHelpService
+        (
+            services.GetRequiredService<TreeWalker>(),
+            services,
+            services.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
+        );
+        
+        var result = await help.ShowHelpAsync(_channelID, "group2");
+        
+        Assert.IsFalse(result.IsSuccess);
+        
+        Assert.IsInstanceOf<ConditionNotSatisfiedError>(result.Error);
     }
 
 }

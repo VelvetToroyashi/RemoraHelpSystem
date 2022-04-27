@@ -38,7 +38,7 @@ public class TreeWalkerTests
     {
         var command = _walker.FindNodes(null);
         
-        Assert.AreEqual(8, command.Count);
+        Assert.AreEqual(10, command.Count);
     }
     
     [Test]
