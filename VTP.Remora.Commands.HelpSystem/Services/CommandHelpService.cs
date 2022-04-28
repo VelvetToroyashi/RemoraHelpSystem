@@ -123,6 +123,7 @@ public class CommandHelpService : ICommandHelpService
                     }
                     else
                     {
+                        successfulNodes.Remove(node);
                         break;
                     }
                 }
