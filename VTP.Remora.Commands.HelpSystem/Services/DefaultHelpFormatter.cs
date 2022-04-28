@@ -147,9 +147,9 @@ public class DefaultHelpFormatter : IHelpFormatter
         foreach (var group in sorted)
         {
             if (group.Count() is 1 || group.All(g => g is not IParentNode))
-                sb.AppendLine($"`{group.Key}` ");
+                sb.Append($"`{group.Key}` ");
             else
-                sb.AppendLine($"`{group.Key}*` ");
+                sb.Append($"`{group.Key}*` ");
         }
 
         var embed = GetBaseEmbed() with
