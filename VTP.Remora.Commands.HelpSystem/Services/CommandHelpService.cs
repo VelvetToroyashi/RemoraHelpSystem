@@ -45,11 +45,8 @@ public class CommandHelpService : ICommandHelpService
         if (!_options.AlwaysShowCommands)
         {
             var nodeConditionResult = await EvaluateNodeConditionsAsync(nodes);
-
-            if (!nodeConditionResult.IsSuccess)
-                return Result.FromError(nodeConditionResult.Error);
             
-            if (!string.IsNullOrEmpty(commandName) && nodeConditionResult.Entity.Count() < nodes.Count())
+            if (!string.IsNullOrEmpty(commandName) && nodeConditionResult.Count() < nodes.Count())
                 return Result.FromError(new ConditionNotSatisfiedError("One or more conditions were not satisfied."));
         }
         
@@ -76,7 +73,7 @@ public class CommandHelpService : ICommandHelpService
         return sendResult.IsSuccess ? Result.FromSuccess() : Result.FromError(sendResult.Error);
     }
     
-    public async Task<Result<IEnumerable<IChildNode>>> EvaluateNodeConditionsAsync(IReadOnlyList<IChildNode> nodes)
+    public async Task<IEnumerable<IChildNode>> EvaluateNodeConditionsAsync(IReadOnlyList<IChildNode> nodes)
     {
         var successfulNodes = new HashSet<IChildNode>();
 
@@ -111,7 +108,7 @@ public class CommandHelpService : ICommandHelpService
                                         .ToArray();
                 
                 if (!conditionServices.Any())
-                    return new InvalidOperationError($"Command was marked with \"{conditionType.Name}\", but no service was registered to handle it.");
+                    throw new InvalidOperationException($"Command was marked with \"{conditionType.Name}\", but no service was registered to handle it.");
 
                 foreach (var condition in conditionServices)
                 {
@@ -124,12 +121,17 @@ public class CommandHelpService : ICommandHelpService
                     else
                     {
                         successfulNodes.Remove(node);
-                        break;
+                        goto next;
                     }
                 }
+
+                continue;
+                
+                next:
+                break;
             }
         }
-        
-        return Result<IEnumerable<IChildNode>>.FromSuccess(successfulNodes);
+
+        return successfulNodes;
     }
 }
