@@ -44,10 +44,12 @@ public class CommandHelpService : ICommandHelpService
 
         if (!_options.AlwaysShowCommands)
         {
-            nodes = (await EvaluateNodeConditionsAsync(nodes)).ToArray();
+            var evaluatedNodes = (await EvaluateNodeConditionsAsync(nodes)).ToArray();
             
             if (!string.IsNullOrEmpty(commandName) && nodes.Count() < nodes.Count())
                 return Result.FromError(new ConditionNotSatisfiedError("One or more conditions were not satisfied."));
+
+            nodes = evaluatedNodes;
         }
         
         if (!nodes.Any())
