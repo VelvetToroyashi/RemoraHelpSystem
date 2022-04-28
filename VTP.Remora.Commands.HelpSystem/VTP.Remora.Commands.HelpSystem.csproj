@@ -4,6 +4,16 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>VTP.RemoraHelpSystem</PackageId>
+        <Title>Remora Help System</Title>
+        <Description>Provides a simple, modular help system for Remora.Discord.</Description>
+        <PackageProjectUrl>https://github.com/VelvetThePanda/RemoraHelpSystem</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/VelvetThePanda/RemoraHelpSystem/blob/master/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/VelvetThePanda/RemoraHelpSystem</RepositoryUrl>
+        <RepositoryType>GitHub</RepositoryType>
+        <PackageTags>Remora.Discord Remora.Commands</PackageTags>
+        <PackageReleaseNotes>Initial release</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
