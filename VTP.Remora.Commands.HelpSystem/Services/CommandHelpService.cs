@@ -46,7 +46,7 @@ public class CommandHelpService : ICommandHelpService
         {
             var evaluatedNodes = (await EvaluateNodeConditionsAsync(nodes)).ToArray();
             
-            if (!string.IsNullOrEmpty(commandName) && nodes.Count() < evaluatedNodes.Count())
+            if (!string.IsNullOrEmpty(commandName) && nodes.Count() > evaluatedNodes.Count())
                 return Result.FromError(new ConditionNotSatisfiedError("One or more conditions were not satisfied."));
 
             nodes = evaluatedNodes;
