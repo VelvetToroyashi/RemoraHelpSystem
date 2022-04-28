@@ -67,6 +67,51 @@ public class TestCommands : CommandGroup
     }
 }
 
+[ExcludeFromCodeCoverage]
+public class TopLevelHelp : CommandGroup
+{
+    [Command("command-1")]
+    public async Task<IResult> Command1() => default;
+    
+    [Command("command-2")]
+    public async Task<IResult> Command2() => default;
+    
+    [Command("command-3")]
+    [RequireDiscordPermission(DiscordPermission.Administrator)]
+    public async Task<IResult> Command3() => default;
+    
+    [Group("group-1")]
+    public class GroupOne : CommandGroup
+    {
+        [Command("command-1")]
+        public async Task<IResult> Command1() => default;
+        
+        [Command("command-2")]
+        public async Task<IResult> Command2() => default;
+        
+        [Command("command-3")]
+        public async Task<IResult> Command3() => default;
+    }
+    
+    [Command("group-2")]
+    public async Task<IResult> GroupTwoCommand() => default;
+    
+    [Group("group-2")]
+    public class GroupTwo : CommandGroup
+    {
+        [Command("command-1")]
+        public async Task<IResult> Command1() => default;
+        
+        [Command("command-2")]
+        public async Task<IResult> Command2() => default;
+        
+        [Command("command-3")]
+        public async Task<IResult> Command3() => default;
+    }
+}
+
+
+
 [Group("group2")]
 [ExcludeFromCodeCoverage]
 public class TestCommands2 : CommandGroup
