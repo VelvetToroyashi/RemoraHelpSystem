@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using Remora.Commands.Trees.Nodes;
 
 namespace VTP.Remora.Commands.HelpSystem;
 
+[ExcludeFromCodeCoverage]
 public static class GroupNodeExtensions
 {
     /// <summary>
