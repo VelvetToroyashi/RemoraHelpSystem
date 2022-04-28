@@ -83,3 +83,13 @@ public class TestCommands3 : CommandGroup
     [Command("command")]
     public async Task<IResult> Command() => default;
 }
+
+[ExcludeFromCodeCoverage]
+[Group("conditioned-group-2")]
+[RequireDiscordPermission(DiscordPermission.ManageChannels)]
+public class TestCommands4 : CommandGroup
+{
+    [Command("command")]
+    [RequireDiscordPermission(DiscordPermission.ManageRoles)]
+    public async Task<IResult> Command() => default;
+}

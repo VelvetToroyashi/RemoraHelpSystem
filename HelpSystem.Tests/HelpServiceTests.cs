@@ -262,12 +262,8 @@ public class HelpServiceTests
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
             Mock.Of<IDiscordRestChannelAPI>()
         );
-        
-        var result = await help.ShowHelpAsync(_channelID, "conditioned");
-        
-        Assert.IsFalse(result.IsSuccess);
-        
-        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await help.ShowHelpAsync(_channelID, "conditioned"));
     }
     
     [Test]
@@ -286,11 +282,7 @@ public class HelpServiceTests
             Mock.Of<IDiscordRestChannelAPI>()
         );
         
-        var result = await help.ShowHelpAsync(_channelID, "conditioned-group");
-        
-        Assert.IsFalse(result.IsSuccess);
-        
-        Assert.IsInstanceOf<InvalidOperationError>(result.Error);
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await help.ShowHelpAsync(_channelID, "conditioned-group"));
     }
 
     [Test]
@@ -329,4 +321,129 @@ public class HelpServiceTests
         Assert.IsInstanceOf<ConditionNotSatisfiedError>(result.Error);
     }
 
+    [Test]
+    public async Task ConditionlessGroupIsAlwaysReturned()
+    {
+        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        
+        conditionMock
+            .Setup(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+        
+        var services = new ServiceCollection()
+            .AddCommands()
+            .AddCommandTree()
+            .WithCommandGroup<TestCommands>()
+            .Finish()
+            .AddSingleton<TreeWalker>()
+            .AddSingleton(conditionMock.Object)
+            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
+            .BuildServiceProvider();
+        
+        var help = new CommandHelpService
+        (
+            services.GetRequiredService<TreeWalker>(),
+            services,
+            services.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
+        );
+
+        var result = await help.EvaluateNodeConditionsAsync(services.GetRequiredService<TreeWalker>().FindNodes("group"));
+        
+        Assert.AreEqual(1, result.Count());
+    }
+
+    [Test]
+    public async Task EvaluatesCommandTypeConditionsCorrectly()
+    {
+        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        
+        conditionMock
+            .SetupSequence(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.FromError(new PermissionDeniedError()))
+            .ReturnsAsync(Result.FromSuccess);
+        
+        var services = new ServiceCollection()
+            .AddCommands()
+            .AddCommandTree()
+            .WithCommandGroup<TestCommands4>()
+            .Finish()
+            .AddSingleton<TreeWalker>()
+            .AddSingleton(conditionMock.Object)
+            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
+            .BuildServiceProvider();
+        
+        var help = new CommandHelpService
+        (
+            services.GetRequiredService<TreeWalker>(),
+            services,
+            services.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
+        );
+
+        var result = await help.EvaluateNodeConditionsAsync(services.GetRequiredService<TreeWalker>().FindNodes("conditioned-group-2 command"));
+        
+        Assert.IsEmpty(result);
+        
+        conditionMock.Verify
+        (   
+            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageChannels), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        
+        conditionMock.Verify
+        (   
+            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageRoles), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Test]
+    public async Task EvaluatesCommandMethodConditionsCorrectly()
+    {
+        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        
+        conditionMock
+            .SetupSequence(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.FromSuccess)
+            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+        
+        var services = new ServiceCollection()
+            .AddCommands()
+            .AddCommandTree()
+            .WithCommandGroup<TestCommands4>()
+            .Finish()
+            .AddSingleton<TreeWalker>()
+            .AddSingleton(conditionMock.Object)
+            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
+            .BuildServiceProvider();
+        
+        var help = new CommandHelpService
+        (
+            services.GetRequiredService<TreeWalker>(),
+            services,
+            services.GetRequiredService<IOptions<HelpSystemOptions>>(),
+            Mock.Of<IDiscordRestChannelAPI>()
+        );
+
+        var result = await help.EvaluateNodeConditionsAsync(services.GetRequiredService<TreeWalker>().FindNodes("conditioned-group-2 command"));
+        
+        Assert.IsEmpty(result);
+        
+        conditionMock.Verify
+        (   
+            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(a => a.Permissions[0] == DiscordPermission.ManageChannels), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        
+        conditionMock.Verify
+        (   
+            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(a => a.Permissions[0] == DiscordPermission.ManageRoles), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+    
 }
