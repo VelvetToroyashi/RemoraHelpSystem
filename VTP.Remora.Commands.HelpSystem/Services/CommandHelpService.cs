@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Reflection;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Remora.Commands.Conditions;
@@ -10,12 +7,12 @@ using Remora.Commands.Results;
 using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
-using Remora.Discord.Commands.Results;
 using Remora.Rest.Core;
 using Remora.Results;
 
 namespace VTP.Remora.Commands.HelpSystem.Services;
 
+[PublicAPI]
 public class CommandHelpService : ICommandHelpService
 {
     private readonly TreeWalker _treeWalker;
@@ -62,6 +59,7 @@ public class CommandHelpService : ICommandHelpService
 
         IEnumerable<IEmbed> embeds;
 
+#pragma warning disable CS8509 // 'switch expression is not exhaustive'; heuristically unreachable condition
         embeds = (nodes.Count, string.IsNullOrEmpty(commandName), nodes.FirstOrDefault() is IParentNode) switch
         {
             (> 1, true,  _) => formatter.GetTopLevelHelpEmbeds(nodes.GroupBy(n => n.Key)),
@@ -69,6 +67,7 @@ public class CommandHelpService : ICommandHelpService
             (  1, _, false) => new [] {formatter.GetCommandHelp(nodes.Single()) },
             (  1, _,  true) => formatter.GetCommandHelp(nodes)
         };
+#pragma warning restore CS8509
 
         var sendResult = await _channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
 
@@ -114,7 +113,7 @@ public class CommandHelpService : ICommandHelpService
 
                 foreach (var condition in conditionServices)
                 {
-                    var result = await (ValueTask<Result>) conditionMethod.Invoke(condition, new object[] {setCondition, CancellationToken.None});
+                    var result = await (ValueTask<Result>) conditionMethod!.Invoke(condition, new object[] {setCondition, CancellationToken.None})!;
 
                     if (result.IsSuccess)
                     {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Remora.Commands.Trees.Nodes;
+﻿using Remora.Commands.Trees.Nodes;
 using Remora.Discord.API.Abstractions.Objects;
 
 namespace VTP.Remora.Commands.HelpSystem.Services;
@@ -23,9 +21,9 @@ public interface IHelpFormatter
     ///
     /// The provided nodes may be of any type, but it's generally expected that .
     /// </summary>
-    /// <param name="subCommands">The child commands, grouped by name.</param>
+    /// <param name="subCommandArray">The child commands, grouped by name.</param>
     /// <returns>One or more embeds displaying relevant information about the given commands.</returns>
-    IEnumerable<IEmbed> GetCommandHelp(IEnumerable< IChildNode> subCommands);
+    IEnumerable<IEmbed> GetCommandHelp(IEnumerable< IChildNode> subCommandArray);
     
     /// <summary>
     /// Creates one or more embeds for a help screen showing the top-level commands.

@@ -1,18 +1,7 @@
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Moq;
 using NUnit.Framework;
-using Remora.Commands.Conditions;
 using Remora.Commands.Extensions;
-using Remora.Discord.API.Abstractions.Rest;
-using Remora.Discord.Commands.Conditions;
-using Remora.Discord.Commands.Results;
-using Remora.Rest.Core;
-using Remora.Results;
-using VTP.Remora.Commands.HelpSystem;
 using VTP.Remora.Commands.HelpSystem.Services;
 
 namespace HelpSystem.Tests;

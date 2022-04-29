@@ -17,10 +17,10 @@ public static class IServiceCollectionExtensions
         if (addHelpCommand)
         {
             services
-                .AddDiscordCommands()
-                .AddCommandTree(treeName)
-                .WithCommandGroup<HelpCommand>()
-                .Finish();
+               .AddDiscordCommands()
+               .AddCommandTree(treeName)
+               .WithCommandGroup<HelpCommand>()
+               .Finish();
         }
 
         services.TryAddScoped<TreeWalker>();

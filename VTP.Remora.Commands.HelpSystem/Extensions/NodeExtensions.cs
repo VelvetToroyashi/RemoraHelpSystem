@@ -16,9 +16,20 @@ public static class GroupNodeExtensions
         if (string.Equals("No description set.", gn.Description, StringComparison.OrdinalIgnoreCase))
             return null;
         
-        if (string.IsNullOrEmpty(gn.Description))
+        return string.IsNullOrEmpty(gn.Description) ? null : gn.Description;
+
+    }
+    
+    /// <summary>
+    /// Returns the description of a <see cref="GroupNode"/> if set, otherwise <c>null</c>.
+    /// </summary>
+    /// <param name="cn">The command node to get the description from.</param>
+    /// <returns>The description of the command node if set, otherwise <c>null</c>.</returns>
+    public static string? GetDescription(this CommandNode cn)
+    {
+        if (string.Equals("No description set.", cn.Shape.Description, StringComparison.OrdinalIgnoreCase))
             return null;
         
-        return gn.Description;
+        return string.IsNullOrEmpty(cn.Shape.Description) ? null : cn.Shape.Description;
     }
 }

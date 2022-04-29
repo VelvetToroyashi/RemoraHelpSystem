@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Remora.Commands.Services;
+﻿using Remora.Commands.Services;
 using Remora.Commands.Trees.Nodes;
 
 namespace VTP.Remora.Commands.HelpSystem.Services;
@@ -65,6 +62,6 @@ public class TreeWalker
             yield return child;
 
         bool TokensRemain() => stack.TryPeek(out _);
-        bool GetNextToken(out string next) => stack.TryPop(out next);
+        void GetNextToken(out string? popped) => stack.TryPop(out popped);
     }
 }
