@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Remora.Commands;
 using Remora.Commands.Trees.Nodes;
 
 namespace VTP.Remora.Commands.HelpSystem;
@@ -27,7 +28,7 @@ public static class GroupNodeExtensions
     /// <returns>The description of the command node if set, otherwise <c>null</c>.</returns>
     public static string? GetDescription(this CommandNode cn)
     {
-        if (string.Equals("No description set.", cn.Shape.Description, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(Constants.DefaultDescription, cn.Shape.Description, StringComparison.OrdinalIgnoreCase))
             return null;
         
         return string.IsNullOrEmpty(cn.Shape.Description) ? null : cn.Shape.Description;

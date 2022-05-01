@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Text;
 using JetBrains.Annotations;
+using Remora.Commands;
 using Remora.Commands.Attributes;
 using Remora.Commands.Extensions;
 using Remora.Commands.Trees.Nodes;
@@ -414,7 +415,7 @@ public class DefaultHelpFormatter : IHelpFormatter
             }
             else if (nodes.First() is GroupNode gn)
             {
-                builder.AppendLine(gn.GetDescription() ?? "No description set.");
+                builder.AppendLine(gn.GetDescription() ?? Constants.DefaultDescription);
             }
         }
         else
@@ -424,7 +425,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                 var description = fgn.GetDescription() ??
                                   nodes.OfType<CommandNode>()
                                       .FirstOrDefault(cn => cn.GetDescription() is not null)?.Shape.Description ??
-                                  "No description set.";
+                                  Constants.DefaultDescription;
            
                 builder.AppendLine(description);
             }
@@ -435,7 +436,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                                       .FirstOrDefault(cn => cn.GetDescription() is not null)?
                                       .Shape
                                       .Description ??
-                                  "No description set.";
+                                  Constants.DefaultDescription;
             
                 builder.AppendLine(description);
             }
