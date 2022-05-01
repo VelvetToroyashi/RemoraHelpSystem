@@ -67,7 +67,7 @@ public partial class HelpFormatterTests
             
             var description = embed.Description.Value.Split('\n');
             
-            Assert.AreEqual("`command`\r", description[9]);
+            Assert.AreEqual("`command`\r", description[10]);
         }
 
         [Test]
@@ -79,8 +79,8 @@ public partial class HelpFormatterTests
             
             var description = embed.Description.Value.Split('\n');
 
-            Assert.AreEqual("`command-1`\r", description[9]);
-            Assert.AreEqual("`command-2`\r", description[10]);
+            Assert.AreEqual("`command-1`\r", description[10]);
+            Assert.AreEqual("`command-2`\r", description[11]);
         }
 
         [Test]
@@ -196,9 +196,9 @@ public partial class HelpFormatterTests
             
             var description = embeds.Description.Value.Split('\n');
             
-            Assert.AreEqual("`command`\r", description[9]);
-            Assert.AreEqual("`overload`\r", description[10]);
-            Assert.AreEqual("`nested-executable-group*`\r", description[11]);
+            Assert.AreEqual("`command`\r", description[10]);
+            Assert.AreEqual("`overload`\r", description[11]);
+            Assert.AreEqual("`nested-executable-group*`\r", description[12]);
         }
         
         [Test]
