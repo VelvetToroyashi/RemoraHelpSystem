@@ -46,7 +46,6 @@ public static class GroupNodeExtensions
         IChildNode? parent = null;
         TAttribute? returnAttribute = null;
         
-        
         if (startingNode is CommandNode cn)
         {
             if (cn.CommandMethod.GetCustomAttribute<TAttribute>() is { } commandAttribute)
@@ -55,14 +54,14 @@ public static class GroupNodeExtensions
         
         do
         {
-            parent = (IChildNode)(parent?.Parent ?? startingNode.Parent);
+            parent = (parent?.Parent ?? startingNode.Parent) as IChildNode;
 
-            var attributes = ((GroupNode)parent).GroupTypes.SelectMany(gt => gt.GetCustomAttributes<TAttribute>());
+            var attributes = (parent as GroupNode)?.GroupTypes.SelectMany(gt => gt.GetCustomAttributes<TAttribute>());
             
-            if (attributes.FirstOrDefault() is {} attribute)
+            if (attributes?.FirstOrDefault() is {} attribute)
                 returnAttribute = attribute;
         }
-        while (parent.Parent is GroupNode && returnAttribute is null);
+        while (parent?.Parent is GroupNode && returnAttribute is null);
         
         return returnAttribute;
     }
