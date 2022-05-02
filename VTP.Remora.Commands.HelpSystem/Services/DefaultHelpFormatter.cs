@@ -229,10 +229,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                     }
                     else
                     {
-                        if (shortName is not null)
-                            localBuilder.Append($"-{shortName}");
-                        else
-                            localBuilder.Append($"--{longName}");
+                        localBuilder.Append(shortName is not null ? $"-{shortName}" : $"--{longName}");
                     }
 
                     if (!isSwitch)
@@ -242,10 +239,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                 if (!isSwitch)
                     localBuilder.Append(parameter.Parameter.Name);
 
-                if (parameter.IsOmissible())
-                    localBuilder.Append("]");
-                else
-                    localBuilder.Append(">");
+                localBuilder.Append(parameter.IsOmissible() ? ']' : '>');
 
                 localBuilder.Append(' ');
             }
