@@ -47,3 +47,19 @@ That's fine, simply pass the name of the tree you want to register help for:
 ```cs
     services.AddHelpSystem("my_custom_tree");
 ```
+
+### I want to group my commands, what do I do?
+
+Grouping commands is easy, simply mark your command with the `[Category("my cateogory")]` attribute.
+
+Then, on your service collection:
+
+```csharp
+services
+    .Configure<HelpSystemOptions>(options => 
+    {
+        options.CommandCategories.Add("my category");
+    });
+```
+
+Now any commands marked with `[Category("my category")]` will be grouped under the category "my category".
