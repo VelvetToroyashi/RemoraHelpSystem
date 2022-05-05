@@ -48,8 +48,13 @@ public static class GroupNodeExtensions
         
         if (startingNode is CommandNode cn)
         {
-            if (cn.CommandMethod.GetCustomAttribute<TAttribute>() is { } commandAttribute)
+            if ((cn.CommandMethod.GetCustomAttribute<TAttribute>() ?? cn.GroupType.GetCustomAttribute<TAttribute>()) is { } commandAttribute)
                 return commandAttribute;
+        }
+        else if (startingNode is GroupNode gn)
+        {
+            if (gn.GroupTypes.Select(gt => gt.GetCustomAttribute<TAttribute>()).FirstOrDefault(gt => gt is not null) is { } groupAttribute)
+                return groupAttribute;
         }
         
         do
@@ -64,5 +69,52 @@ public static class GroupNodeExtensions
         while (parent?.Parent is GroupNode && returnAttribute is null);
         
         return returnAttribute;
+    }
+
+    public static IEnumerable<TAttribute> GetAttribtuesFromTree<TAttribute>(this IChildNode startingNode, bool returnAnscestors) where TAttribute : Attribute
+    {
+        IChildNode? parent = null;
+
+        switch (startingNode)
+        {
+            case CommandNode cn:
+            {
+                if ((cn.CommandMethod.GetCustomAttribute<TAttribute>() ?? cn.GroupType.GetCustomAttribute<TAttribute>()) is { } commandAttribute)
+                {
+                    yield return commandAttribute;
+                
+                    if (!returnAnscestors)
+                        yield break;
+                }
+                break;
+            }
+            case GroupNode gn:
+            {
+                var attributes = gn.GroupTypes.Select(gt => gt.GetCustomAttribute<TAttribute>()).Where(att => att is not null);
+            
+                foreach (var attribute in attributes)
+                    yield return attribute!;
+            
+                if (!returnAnscestors)
+                    yield break;
+                break;
+            }
+        }
+        
+        do
+        {
+            parent = (parent?.Parent ?? startingNode.Parent) as IChildNode;
+
+            var attributes = (parent as GroupNode)?.GroupTypes.SelectMany(gt => gt.GetCustomAttributes<TAttribute>());
+
+            if (attributes?.FirstOrDefault() is not { } attribute) 
+                continue;
+            
+            yield return attribute;
+                
+            if (!returnAnscestors)
+                yield break;
+        }
+        while (parent?.Parent is GroupNode);
     }
 }

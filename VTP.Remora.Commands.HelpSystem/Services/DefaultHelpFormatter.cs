@@ -1,6 +1,8 @@
+using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Options;
 using Remora.Commands;
 using Remora.Commands.Attributes;
 using Remora.Commands.Extensions;
@@ -15,6 +17,13 @@ namespace VTP.Remora.Commands.HelpSystem.Services;
 [PublicAPI]
 public class DefaultHelpFormatter : IHelpFormatter
 {
+    private readonly HelpSystemOptions _options;
+    
+    public DefaultHelpFormatter(IOptions<HelpSystemOptions> options)
+    {
+        _options = options.Value;
+    }
+    
 
     public IEmbed GetCommandHelp(IChildNode command)
     {
@@ -142,16 +151,69 @@ public class DefaultHelpFormatter : IHelpFormatter
     
     public IEnumerable<IEmbed> GetTopLevelHelpEmbeds(IEnumerable<IGrouping<string, IChildNode>> commands)
     {
-        var sorted = commands.OrderBy(x => x.Key);
-
         var sb = new StringBuilder();
         
-        foreach (var group in sorted)
+        if (!_options.CommandCategories.Any())
         {
-            if (group.Count() is 1 || group.All(g => g is not IParentNode))
-                sb.Append($"`{group.Key}` ");
-            else
-                sb.Append($"`{group.Key}*` ");
+            var sorted = commands.OrderBy(x => x.Key);
+            
+            foreach (var group in sorted)
+            {
+                if (group.Count() is 1 || group.All(g => g is not IParentNode))
+                    sb.Append($"`{group.Key}` ");
+                else
+                    sb.Append($"`{group.Key}*` ");
+            }
+        }
+        else
+        {
+            // We're gonna need to loop over this a few times.
+            var commandArray = commands.ToArray();
+
+            var categorized = new Dictionary<string, List<IGrouping<string, IChildNode>>>();
+
+            foreach (var group in commandArray)
+            {
+                string category = "Uncategorized";
+                
+                foreach (var command in group)
+                {
+                    var categoryAttribute = command.GetAttributeFromTree<CategoryAttribute>();
+
+                    if (categoryAttribute is null) 
+                        continue;
+
+                    var categoryName = _options.CommandCategories.FirstOrDefault(c => c.Equals(categoryAttribute.Category, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (categoryName is null) 
+                        continue;
+                    
+                    category = categoryName;
+                    break;
+                }
+                
+                if (!categorized.ContainsKey(category))
+                    categorized.Add(category, new());
+                
+                categorized[category].Add(group);
+            }
+
+            var orderedCategories = categorized.OrderByDescending(c => _options.CommandCategories.IndexOf(c.Key));
+            
+            foreach (var category in orderedCategories)
+            {
+                sb.AppendLine($"**`{category.Key}`**");
+                
+                foreach (var group in category.Value)
+                {
+                    if (group.Count() is 1 || group.All(g => g is not IParentNode))
+                        sb.Append($"`{group.Key}` ");
+                    else
+                        sb.Append($"`{group.Key}*` ");
+                }
+                
+                sb.AppendLine();
+            }
         }
 
         var embed = GetBaseEmbed() with
