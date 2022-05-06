@@ -431,9 +431,11 @@ public class DefaultHelpFormatter : IHelpFormatter
     {
         var path = new List<string?>();
         
-        path.Add(node.Key);
-        IParentNode? parent = null;
+        IParentNode? parent = node.Parent;
 
+        path.Add(node.Key);
+        path.Add((parent as IChildNode)?.Key);
+        
         do
         {
             parent = (parent as IChildNode)?.Parent;
