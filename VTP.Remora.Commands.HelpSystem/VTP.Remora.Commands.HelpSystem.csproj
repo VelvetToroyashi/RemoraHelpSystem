@@ -13,8 +13,12 @@
         <RepositoryUrl>https://github.com/VelvetThePanda/RemoraHelpSystem</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
         <PackageTags>Remora.Discord Remora.Commands</PackageTags>
-        <PackageReleaseNotes>Added support for command categorization</PackageReleaseNotes>
-        <PackageVersion>1.1.0</PackageVersion>
+        <PackageReleaseNotes>- Fix categorization order and put uncategorized commands at the bottom
+
+ - Add spacing between command categories
+ 
+ - Fix path building, constructing the correct path for nested commands</PackageReleaseNotes>
+        <PackageVersion>1.1.1</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
