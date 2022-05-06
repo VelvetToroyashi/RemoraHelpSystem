@@ -212,7 +212,8 @@ public class DefaultHelpFormatter : IHelpFormatter
                         sb.Append($"`{group.Key}*` ");
                 }
                 
-                sb.AppendLine();
+                sb.AppendLine()
+                  .AppendLine();
             }
         }
 
