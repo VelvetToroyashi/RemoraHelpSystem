@@ -198,7 +198,7 @@ public class DefaultHelpFormatter : IHelpFormatter
                 categorized[category].Add(group);
             }
 
-            var orderedCategories = categorized.OrderByDescending(c => _options.CommandCategories.IndexOf(c.Key));
+            var orderedCategories = categorized.Skip(1).OrderBy(c => _options.CommandCategories.IndexOf(c.Key)).Append(categorized.First());
             
             foreach (var category in orderedCategories)
             {
