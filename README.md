@@ -14,7 +14,7 @@ message formatting, metadata handling, and even dispatching the help message.
 
 ### How do I use it?
 
-Firstly add `VTP.Remora.Commands.HelpSystem` from NuGet to your project.
+Firstly add `VTP.RemoraHelpSystem` from NuGet to your project.
 
 Then, add the help system:
 
