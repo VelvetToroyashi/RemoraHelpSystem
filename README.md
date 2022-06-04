@@ -1,4 +1,4 @@
-## VTP.Remora.Commands.HelpSystem
+## VTP.RemoraHelpSystem
 
 ### What is it?
 
