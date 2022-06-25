@@ -41,12 +41,12 @@ public class CommandHelpService : ICommandHelpService
 
         if (!_options.AlwaysShowCommands)
         {
-            var evaluatedNodes = (await EvaluateNodeConditionsAsync(nodes)).ToArray();
-            
-            if (!string.IsNullOrEmpty(commandName) && nodes.Count() > evaluatedNodes.Count())
-                return Result.FromError(new ConditionNotSatisfiedError("One or more conditions were not satisfied."));
+            var evaluation = await EvaluateNodeConditionsAsync(nodes);
 
-            nodes = evaluatedNodes;
+            if (!string.IsNullOrEmpty(commandName) && evaluation.UnsatisfiedCondition is {} unsatisfied)
+                return Result.FromError(new ConditionNotSatisfiedError("One or more conditions were not satisfied.", unsatisfied));
+
+            nodes = evaluation.Nodes.ToArray();
         }
         
         if (!nodes.Any())
@@ -74,22 +74,25 @@ public class CommandHelpService : ICommandHelpService
         return sendResult.IsSuccess ? Result.FromSuccess() : Result.FromError(sendResult.Error);
     }
     
-    public async Task<IEnumerable<IChildNode>> EvaluateNodeConditionsAsync(IReadOnlyList<IChildNode> nodes)
+    public async Task<(IEnumerable<IChildNode> Nodes, ConditionAttribute? UnsatisfiedCondition)> EvaluateNodeConditionsAsync(IReadOnlyList<IChildNode> nodes)
     {
         var successfulNodes = new HashSet<IChildNode>();
+        ConditionAttribute? unsatisfiedCondition = null;
 
         foreach (var node in nodes)
         {
             var conditions = new List<ConditionAttribute>();
 
-            if (node is CommandNode cn)
+            switch (node)
             {
-                conditions.AddRange(cn.GroupType.GetCustomAttributes<ConditionAttribute>());
-                conditions.AddRange(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
+                case CommandNode cn:
+                    conditions.AddRange(cn.GroupType.GetCustomAttributes<ConditionAttribute>());
+                    conditions.AddRange(cn.CommandMethod.GetCustomAttributes<ConditionAttribute>());
+                    break;
+                case GroupNode gn:
+                    conditions.AddRange(gn.GroupTypes.SelectMany(gt => gt.GetCustomAttributes<ConditionAttribute>()));
+                    break;
             }
-            
-            if (node is GroupNode gn)
-                conditions.AddRange(gn.GroupTypes.SelectMany(gt => gt.GetCustomAttributes<ConditionAttribute>()));
 
             if (!conditions.Any())
             {
@@ -122,6 +125,7 @@ public class CommandHelpService : ICommandHelpService
                     else
                     {
                         successfulNodes.Remove(node);
+                        unsatisfiedCondition ??= setCondition;
                         goto next;
                     }
                 }
@@ -133,6 +137,6 @@ public class CommandHelpService : ICommandHelpService
             }
         }
 
-        return successfulNodes;
+        return (successfulNodes, unsatisfiedCondition);
     }
 }

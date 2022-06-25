@@ -23,10 +23,10 @@
 
     <ItemGroup>
       <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-      <PackageReference Include="Remora.Commands" Version="9.0.2" />
-      <PackageReference Include="Remora.Discord.API.Abstractions" Version="58.0.0" />
-      <PackageReference Include="Remora.Discord.Commands" Version="20.1.4" />
-      <PackageReference Include="Remora.Rest.Core" Version="2.0.1" />
+      <PackageReference Include="Remora.Commands" Version="10.0.0" />
+      <PackageReference Include="Remora.Discord.API.Abstractions" Version="66.0.1" />
+      <PackageReference Include="Remora.Discord.Commands" Version="25.0.3" />
+      <PackageReference Include="Remora.Rest.Core" Version="2.0.2" />
     </ItemGroup>
 
 </Project>

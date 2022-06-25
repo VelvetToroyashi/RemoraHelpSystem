@@ -62,8 +62,8 @@ public partial class HelpFormatterTests
             
             var embed = result.First();
             
-            Assert.AreEqual("**`category 1`**\r", embed.Description.Value.Split('\n')[0]);
-            Assert.AreEqual("`categorized-command` \r", embed.Description.Value.Split('\n')[1]);
+            Assert.AreEqual("**`category 1`**\r", embed.Description.Value.Split('\n')[3]);
+            Assert.AreEqual("`categorized-command` \r", embed.Description.Value.Split('\n')[4]);
         }
 
         [Test]
