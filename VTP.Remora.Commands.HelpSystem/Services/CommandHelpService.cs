@@ -13,31 +13,21 @@ using Remora.Results;
 namespace VTP.Remora.Commands.HelpSystem.Services;
 
 [PublicAPI]
-public class CommandHelpService : ICommandHelpService
+public class CommandHelpService
+(
+    TreeWalker treeWalker,
+    IServiceProvider services,
+    IOptions<HelpSystemOptions> options,
+    IDiscordRestChannelAPI channels
+)
+: ICommandHelpService
 {
-    private readonly TreeWalker _treeWalker;
-    private readonly IServiceProvider _services;
-    private readonly HelpSystemOptions _options;
-    private readonly IDiscordRestChannelAPI _channels;
-    
-    
-    public CommandHelpService
-    (
-        TreeWalker treeWalker,
-        IServiceProvider services,
-        IOptions<HelpSystemOptions> options,
-        IDiscordRestChannelAPI channels
-    )
-    {
-        _treeWalker = treeWalker;
-        _services   = services;
-        _options    = options.Value;
-        _channels   = channels;
-    }
+    private readonly HelpSystemOptions _options = options.Value;
+
 
     public async Task<Result> ShowHelpAsync(Snowflake channelID, string? commandName = null, string? treeName = null)
     {
-        var nodes = _treeWalker.FindNodes(commandName, treeName);
+        var nodes = treeWalker.FindNodes(commandName, treeName);
 
         if (!_options.AlwaysShowCommands)
         {
@@ -52,24 +42,22 @@ public class CommandHelpService : ICommandHelpService
         if (!nodes.Any())
             return Result.FromError(new NotFoundError($"No command with the name \"{commandName}\" was found."));
 
-        var formatter = _services.GetService<IHelpFormatter>();
+        var formatter = services.GetService<IHelpFormatter>();
         
         if (formatter is null)
             return Result.FromError(new InvalidOperationError("Help was invoked, but no formatter was registered."));
 
-        IEnumerable<IEmbed> embeds;
-
-    #pragma warning disable CS8509 // 'switch expression is not exhaustive'; heuristically unreachable condition
-        embeds = (nodes.Count, string.IsNullOrEmpty(commandName), nodes.FirstOrDefault() is IParentNode) switch
+#pragma warning disable CS8509 // 'switch expression is not exhaustive'; heuristically unreachable condition
+        IEnumerable<IEmbed> embeds = (nodes.Count, string.IsNullOrEmpty(commandName), nodes.FirstOrDefault() is IParentNode) switch
         {
             (> 1, true,  _) => formatter.GetTopLevelHelpEmbeds(nodes.GroupBy(n => n.Key)),
             (> 1, false, _) => formatter.GetCommandHelp(nodes),
-            (  1, _, false) => new [] {formatter.GetCommandHelp(nodes.Single()) },
+            (  1, _, false) =>  [ formatter.GetCommandHelp(nodes.Single()) ],
             (  1, _,  true) => formatter.GetCommandHelp(nodes)
         };
     #pragma warning restore CS8509
 
-        var sendResult = await _channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
+        var sendResult = await channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
 
         return sendResult.IsSuccess ? Result.FromSuccess() : Result.FromError(sendResult.Error);
     }
@@ -81,7 +69,7 @@ public class CommandHelpService : ICommandHelpService
 
         foreach (var node in nodes)
         {
-            var conditions = new List<ConditionAttribute>();
+            List<ConditionAttribute> conditions = [];
 
             switch (node)
             {
@@ -105,7 +93,7 @@ public class CommandHelpService : ICommandHelpService
                 var conditionType = typeof(ICondition<>).MakeGenericType(setCondition.GetType());
                 var conditionMethod = conditionType.GetMethod(nameof(ICondition<ConditionAttribute>.CheckAsync));
                 
-                var conditionServices = _services
+                var conditionServices = services
                                         .GetServices(conditionType)
                                         .Where(c => c is not null)
                                         .Cast<ICondition>()
@@ -116,7 +104,7 @@ public class CommandHelpService : ICommandHelpService
 
                 foreach (var condition in conditionServices)
                 {
-                    var result = await (ValueTask<Result>) conditionMethod!.Invoke(condition, new object[] {setCondition, CancellationToken.None})!;
+                    var result = await (ValueTask<Result>) conditionMethod!.Invoke(condition, [setCondition, CancellationToken.None])!;
 
                     if (result.IsSuccess)
                     {

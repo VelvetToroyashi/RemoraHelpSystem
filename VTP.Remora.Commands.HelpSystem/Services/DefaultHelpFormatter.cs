@@ -15,22 +15,16 @@ using Remora.Discord.Commands.Extensions;
 namespace VTP.Remora.Commands.HelpSystem.Services;
 
 [PublicAPI]
-public class DefaultHelpFormatter : IHelpFormatter
+public class DefaultHelpFormatter(IOptions<HelpSystemOptions> options) : IHelpFormatter
 {
-    private readonly HelpSystemOptions _options;
-    
-    public DefaultHelpFormatter(IOptions<HelpSystemOptions> options)
-    {
-        _options = options.Value;
-    }
-    
+    private readonly HelpSystemOptions _options = options.Value;
+
 
     public IEmbed GetCommandHelp(IChildNode command)
     {
         var sb = new StringBuilder();
 
-        var casted = (CommandNode)command;
-        var commandArray = new[] {command};
+        IChildNode[] commandArray = [command];
         
         AddCommandPath(sb, command);
         AddCommandAliases(sb, commandArray);
@@ -104,14 +98,14 @@ public class DefaultHelpFormatter : IHelpFormatter
         // If we need to deal with overloaded groups, it's actually pretty simple.
         // var children = subCommands.OfType<IParentNode>().SelectMany(x => x.Children);
         // var parent = subCommands.OfType<IParentNode>().First();
-        // Then, just use the children as you would normally. The reaosn this isn't done
-        // by default is because it's somewhat niche? But the code is there in case changes
+        // Then, just use the children as you would normally. The reason this isn't done
+        // by default is that it's somewhat niche? But the code is there in case changes
         // need to be made. There's also the performance impact of re-iterating more than we
-        // have to, but we're using LINQ, so allocations > speed anyways.
+        // have to, but we're using LINQ, so allocations > speed anyway.
         var group = (GroupNode)subCommandArray.First(sc => sc is IParentNode);
 
         // This makes the assumption that there are no overloaded groups,
-        // which is impossible to do without backtracking anwyay.
+        // which is impossible to do without backtracking anyway.
         var executable = subCommandArray.Where(sc => sc is not IParentNode).Cast<CommandNode>();
         
         var gsc = group.Children.GroupBy(x => x.Key);
@@ -430,7 +424,7 @@ public class DefaultHelpFormatter : IHelpFormatter
 
     private void AddCommandPath(StringBuilder builder, IChildNode node, bool appendPath = true)
     {
-        var path = new List<string?>();
+        List<string?> path = [];
         
         IParentNode? parent = node.Parent;
 

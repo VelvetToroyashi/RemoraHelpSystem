@@ -15,13 +15,13 @@ public class HelpSystemOptions
     public string? TreeName { get; set; }
     
     /// <summary>
-    /// Whether or not to show commands regardless of if their conditions have been met.
+    /// Whether to show commands regardless of if their conditions have been met.
     /// </summary>
     public bool AlwaysShowCommands { get; set; }
     
     /// <summary>
     /// Gets a list of named groups to help categorize commands.
-    /// If any are specified, commands will be grouped by the cateogory listed on command module.
+    /// If any are specified, commands will be grouped by the category listed on command module.
     /// </summary>
-    public List<string> CommandCategories { get; } = new();
+    public List<string> CommandCategories { get; } = [];
 }
