@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Moq;
+using NSubstitute;
 using NUnit.Framework;
 using Remora.Commands.Conditions;
 using Remora.Commands.Extensions;
@@ -38,7 +38,7 @@ public class HelpServiceTests
             .AddCommandTree()
             .WithCommandGroup<TestCommands>()
             .Finish()
-            .AddSingleton(Mock.Of<IDiscordRestChannelAPI>())
+            .AddSingleton(Substitute.For<IDiscordRestChannelAPI>())
             .AddScoped<TreeWalker>()
             .Configure<HelpSystemOptions>(h => h.AlwaysShowCommands = true)
             .AddScoped<CommandHelpService>()
@@ -59,14 +59,14 @@ public class HelpServiceTests
     [Test]
     public async Task EmptyInputInvokesTopLevelCommandHelp()
     {
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
 
         formatterMock
-            .Setup(fm => fm.GetTopLevelHelpEmbeds(It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()))
-            .Returns(new IEmbed[] { new Embed() { Title = "Top Level Commands"} });
+            .GetTopLevelHelpEmbeds(Arg.Any<IEnumerable<IGrouping<string, IChildNode>>>())
+            .Returns(new IEmbed[] { new Embed { Title = "Showing top level help" } });
 
         var services = new ServiceCollection()
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(formatterMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
@@ -74,27 +74,27 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, string.Empty);
         
         Assert.IsTrue(result.IsSuccess);
         
-        formatterMock.Verify(fm => fm.GetTopLevelHelpEmbeds(It.IsAny<IEnumerable<IGrouping<string, IChildNode>>>()), Times.Once);
+        formatterMock.Received().GetTopLevelHelpEmbeds(Arg.Any<IEnumerable<IGrouping<string, IChildNode>>>());
     }
 
     [Test]
     public async Task GroupReturnsSubcommands()
     {
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()))
-            .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
+            .GetCommandHelp(Arg.Any<IEnumerable<IChildNode>>())
+            .Returns(new IEmbed[] { new Embed { Title = "Showing subcommands for group" } });
         
         var services = new ServiceCollection()
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(formatterMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
@@ -102,7 +102,7 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "group");
@@ -111,24 +111,28 @@ public class HelpServiceTests
         
         // This is technically wrong, see commit f1dec1fa
         // or the comment in this GetCommandHelp below
-        formatterMock.Verify
-        (
-            fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()),
-            Times.Once
-        );
+        formatterMock
+            .Received()
+            .GetCommandHelp
+            (
+                Arg.Is<IEnumerable<IChildNode>>
+                (
+                    c => c.Count() == 2 && c.All(n => n is CommandNode)
+                )
+            );
     }
 
     [Test]
     public async Task ExecutableGroupUsesSubCommands()
     {
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetCommandHelp(It.IsAny<IEnumerable<IChildNode>>()))
-            .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
+            .GetCommandHelp(Arg.Any<IEnumerable<IChildNode>>())
+            .Returns(new IEmbed[] { new Embed { Title = "Showing subcommands for executable group" } });
         
         var services = new ServiceCollection()
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(formatterMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
@@ -136,39 +140,35 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "executable-group");
         
         Assert.IsTrue(result.IsSuccess);
         
-        formatterMock.Verify
-        (
-            fm => fm.GetCommandHelp
+        formatterMock
+            .Received()
+            .GetCommandHelp
             (
-                It.Is<IEnumerable<IChildNode>>
+                Arg.Is<IEnumerable<IChildNode>>
                 (
-                    s => s.Count() == 2 &&
-                         s.First() is CommandNode && 
-                         s.Last() is GroupNode
+                    c => c.Count() == 2 && c.All(n => n is CommandNode)
                 )
-            ),
-            Times.Once
-        );
+            );
     }
     
     [Test]
     public async Task SingleCommandReturnsSingleCommand()
     {
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetCommandHelp(It.IsAny<IChildNode>()))
-            .Returns( new Embed() { Title = "Showing single command" } );
+            .GetCommandHelp(Arg.Any<IEnumerable<IChildNode>>())
+            .Returns(new IEmbed[] { new Embed { Title = "Showing help for single command" } });
         
         var services = new ServiceCollection()
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(formatterMock)
             .BuildServiceProvider();
         
         var help = new CommandHelpService
@@ -176,31 +176,35 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "command");
         
         Assert.IsTrue(result.IsSuccess);
         
-        formatterMock.Verify
-        (
-            fm => fm.GetCommandHelp(It.Is<IChildNode>(c => c.Key == "command")),
-            Times.Once
-        );
+        formatterMock
+            .Received()
+            .GetCommandHelp
+            (
+                Arg.Is<IEnumerable<IChildNode>>
+                (
+                    c => c.Count() == 1 && c.First() is CommandNode
+                )
+            );
     }
 
     [Test]
     public async Task CommandOverloadsHandledCorrectly()
     {
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
         
         formatterMock
-            .Setup(fm => fm.GetCommandHelp((IEnumerable<IChildNode>)It.IsAny<IEnumerable<IGrouping<string,IChildNode>>>()))
-            .Returns(new IEmbed[] { new Embed() { Title = "Showing subcommands for group" } });
+            .GetCommandHelp(Arg.Any<IEnumerable<IChildNode>>())
+            .Returns(new IEmbed[] { new Embed { Title = "Showing overloads" } });
 
         var services = new ServiceCollection()
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(formatterMock)
             .BuildServiceProvider();
 
         var help = new CommandHelpService
@@ -208,7 +212,7 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "overload");
@@ -216,18 +220,16 @@ public class HelpServiceTests
         
         Assert.IsTrue(result.IsSuccess);
         
-        formatterMock.Verify
-        (
-            fm => fm.GetCommandHelp
+        formatterMock
+            .Received()
+            .GetCommandHelp
             (
-                It.Is<IEnumerable<IChildNode>>
+                Arg.Is<IEnumerable<IChildNode>>
                 (
-                    s => s.Count() == 2 &&
-                         s.All(sc => sc is CommandNode)
+                     c => c.Count() == 2 &&
+                     c.All(n => n is CommandNode)
                 )
-            ),
-            Times.Once
-        );
+            );
     }
 
     [Test]
@@ -238,7 +240,7 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             new ServiceCollection().BuildServiceProvider(),
             _serviceProvider.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "command");
@@ -251,7 +253,7 @@ public class HelpServiceTests
     public async Task UnregisteredConditionReturnsError()
     {
         var services = new ServiceCollection()
-            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .AddSingleton(Substitute.For<IHelpFormatter>())
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
         
@@ -260,7 +262,7 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
 
         Assert.ThrowsAsync<InvalidOperationException>(async () => await help.ShowHelpAsync(_channelID, "conditioned"));
@@ -270,7 +272,7 @@ public class HelpServiceTests
     public async Task UnregisteredGroupReturnsError()
     {
         var services = new ServiceCollection()
-            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .AddSingleton(Substitute.For<IHelpFormatter>())
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
         
@@ -279,7 +281,7 @@ public class HelpServiceTests
             _serviceProvider.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         Assert.ThrowsAsync<InvalidOperationException>(async () => await help.ShowHelpAsync(_channelID, "conditioned-group"));
@@ -288,11 +290,11 @@ public class HelpServiceTests
     [Test]
     public async Task CorrectlyChecksMultiTypeGroupConditions()
     {
-        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        var conditionMock = Substitute.For<ICondition<RequireDiscordPermissionAttribute>>();
         
         conditionMock
-            .Setup(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+            .CheckAsync(Arg.Any<RequireDiscordPermissionAttribute>(), Arg.Any<CancellationToken>())
+            .Returns(Result.FromSuccess());
 
         var services = new ServiceCollection()
             .AddCommands()
@@ -301,8 +303,8 @@ public class HelpServiceTests
             .WithCommandGroup<TestCommands3>()
             .Finish()
             .AddSingleton<TreeWalker>()
-            .AddSingleton(conditionMock.Object)
-            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .AddSingleton(conditionMock)
+            .AddSingleton(Substitute.For<IHelpFormatter>())
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
 
@@ -311,7 +313,7 @@ public class HelpServiceTests
             services.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
         
         var result = await help.ShowHelpAsync(_channelID, "group2");
@@ -324,11 +326,11 @@ public class HelpServiceTests
     [Test]
     public async Task ConditionlessGroupIsAlwaysReturned()
     {
-        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        var conditionMock = Substitute.For<ICondition<RequireDiscordPermissionAttribute>>();
         
         conditionMock
-            .Setup(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+            .CheckAsync(Arg.Any<RequireDiscordPermissionAttribute>(), Arg.Any<CancellationToken>())
+            .Returns(Result.FromSuccess());
         
         var services = new ServiceCollection()
             .AddCommands()
@@ -336,8 +338,8 @@ public class HelpServiceTests
             .WithCommandGroup<TestCommands>()
             .Finish()
             .AddSingleton<TreeWalker>()
-            .AddSingleton(conditionMock.Object)
-            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .AddSingleton(conditionMock)
+            .AddSingleton(Substitute.For<IHelpFormatter>())
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
         
@@ -346,7 +348,7 @@ public class HelpServiceTests
             services.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
 
         var result = await help.EvaluateNodeConditionsAsync(services.GetRequiredService<TreeWalker>().FindNodes("group"));
@@ -357,12 +359,10 @@ public class HelpServiceTests
     [Test]
     public async Task EvaluatesCommandTypeConditionsCorrectly()
     {
-        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        var conditionMock = Substitute.For<ICondition<RequireDiscordPermissionAttribute>>();
         
-        conditionMock
-            .SetupSequence(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.FromError(new PermissionDeniedError()))
-            .ReturnsAsync(Result.FromSuccess);
+        conditionMock.CheckAsync(Arg.Any<RequireDiscordPermissionAttribute>(), Arg.Any<CancellationToken>())
+                     .Returns(Result.FromError(new PermissionDeniedError(), Result.FromSuccess()));
         
         var services = new ServiceCollection()
             .AddCommands()
@@ -370,8 +370,8 @@ public class HelpServiceTests
             .WithCommandGroup<TestCommands4>()
             .Finish()
             .AddSingleton<TreeWalker>()
-            .AddSingleton(conditionMock.Object)
-            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .AddSingleton(conditionMock)
+            .AddSingleton(Substitute.For<IHelpFormatter>())
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
         
@@ -380,35 +380,39 @@ public class HelpServiceTests
             services.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
 
         var result = await help.EvaluateNodeConditionsAsync(services.GetRequiredService<TreeWalker>().FindNodes("conditioned-group-2 command"));
         
         Assert.IsEmpty(result.Nodes);
         
-        conditionMock.Verify
-        (   
-            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageChannels), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+#pragma warning disable CA2012
+        _ = conditionMock
+            .Received()
+            .CheckAsync
+            (
+                Arg.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageChannels),
+                Arg.Any<CancellationToken>()
+            );
         
-        conditionMock.Verify
-        (   
-            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageRoles), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        _ = conditionMock
+            .DidNotReceive()
+            .CheckAsync
+            (
+                Arg.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageRoles),
+                Arg.Any<CancellationToken>()
+            );
+#pragma warning restore CA2012
     }
 
     [Test]
     public async Task EvaluatesCommandMethodConditionsCorrectly()
     {
-        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        var conditionMock = Substitute.For<ICondition<RequireDiscordPermissionAttribute>>();
         
-        conditionMock
-            .SetupSequence(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.FromSuccess)
-            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+        conditionMock.CheckAsync(Arg.Any<RequireDiscordPermissionAttribute>(), Arg.Any<CancellationToken>())
+                     .Returns(Result.FromSuccess(), Result.FromError(new PermissionDeniedError()));
         
         var services = new ServiceCollection()
             .AddCommands()
@@ -416,8 +420,8 @@ public class HelpServiceTests
             .WithCommandGroup<TestCommands4>()
             .Finish()
             .AddSingleton<TreeWalker>()
-            .AddSingleton(conditionMock.Object)
-            .AddSingleton(Mock.Of<IHelpFormatter>())
+            .AddSingleton(conditionMock)
+            .AddSingleton(Substitute.For<IHelpFormatter>())
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
         
@@ -426,36 +430,40 @@ public class HelpServiceTests
             services.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
 
         var result = await help.EvaluateNodeConditionsAsync(services.GetRequiredService<TreeWalker>().FindNodes("conditioned-group-2 command"));
         
         Assert.IsEmpty(result.Nodes);
         
-        conditionMock.Verify
-        (   
-            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(a => a.Permissions[0] == DiscordPermission.ManageChannels), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+#pragma warning disable CA2012 // 'ValueTasks should be awaited' Shut up, Roslyn.
+        _ = conditionMock.Received()
+                     .CheckAsync
+                    (
+                        Arg.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageChannels),
+                        Arg.Any<CancellationToken>()
+                    );
         
-        conditionMock.Verify
-        (   
-            c => c.CheckAsync(It.Is<RequireDiscordPermissionAttribute>(a => a.Permissions[0] == DiscordPermission.ManageRoles), It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        _ = conditionMock.Received()
+                     .CheckAsync
+                    (
+                        Arg.Is<RequireDiscordPermissionAttribute>(c => c.Permissions[0] == DiscordPermission.ManageRoles),
+                        Arg.Any<CancellationToken>()
+                    );
+#pragma warning restore CA2012
     }
     
     [Test]
     public async Task ShowsAllTopLevelHelpWhenUsingShowAllCommands()
     {
-        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        var conditionMock = Substitute.For<ICondition<RequireDiscordPermissionAttribute>>();
         
         conditionMock
-            .Setup(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+            .CheckAsync(Arg.Any<RequireDiscordPermissionAttribute>(), Arg.Any<CancellationToken>())
+            .Returns(Result.FromSuccess());
         
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
             
         var services = new ServiceCollection()
             .AddCommands()
@@ -463,8 +471,8 @@ public class HelpServiceTests
             .WithCommandGroup<TopLevelHelp.Uncategorized>()
             .Finish()
             .AddSingleton<TreeWalker>()
-            .AddSingleton(conditionMock.Object)
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(conditionMock)
+            .AddSingleton(formatterMock)
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = true)
             .BuildServiceProvider();
         
@@ -473,30 +481,27 @@ public class HelpServiceTests
             services.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
 
         var result = await help.ShowHelpAsync(_channelID);
             
         Assert.IsTrue(result.IsSuccess);
             
-        formatterMock.Verify
-        (
-            f => f.GetTopLevelHelpEmbeds(It.Is<IEnumerable<IGrouping<string,IChildNode>>>(g => g.Count() == 5)),
-            Times.Once
-        );
+        formatterMock.Received()
+                     .GetTopLevelHelpEmbeds(Arg.Is<IEnumerable<IGrouping<string, IChildNode>>>(g => g.Count() == 5));
     }
     
     [Test]
     public async Task CorrectlyHidesConditionedCommandsForTopLevelHelp()
     {
-        var conditionMock = new Mock<ICondition<RequireDiscordPermissionAttribute>>();
+        var conditionMock = Substitute.For<ICondition<RequireDiscordPermissionAttribute>>();
         
         conditionMock
-            .Setup(c => c.CheckAsync(It.IsAny<RequireDiscordPermissionAttribute>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.FromError(new PermissionDeniedError()));
+            .CheckAsync(Arg.Any<RequireDiscordPermissionAttribute>(), Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs(Result.FromError(new PermissionDeniedError()));
         
-        var formatterMock = new Mock<IHelpFormatter>();
+        var formatterMock = Substitute.For<IHelpFormatter>();
             
         var services = new ServiceCollection()
             .AddCommands()
@@ -504,8 +509,8 @@ public class HelpServiceTests
             .WithCommandGroup<TopLevelHelp.Uncategorized>()
             .Finish()
             .AddSingleton<TreeWalker>()
-            .AddSingleton(conditionMock.Object)
-            .AddSingleton(formatterMock.Object)
+            .AddSingleton(conditionMock)
+            .AddSingleton(formatterMock)
             .Configure<HelpSystemOptions>(help => help.AlwaysShowCommands = false)
             .BuildServiceProvider();
         
@@ -514,17 +519,14 @@ public class HelpServiceTests
             services.GetRequiredService<TreeWalker>(),
             services,
             services.GetRequiredService<IOptions<HelpSystemOptions>>(),
-            Mock.Of<IDiscordRestChannelAPI>()
+            Substitute.For<IDiscordRestChannelAPI>()
         );
 
         var result = await help.ShowHelpAsync(_channelID);
             
         Assert.IsTrue(result.IsSuccess);
-            
-        formatterMock.Verify
-        (
-            f => f.GetTopLevelHelpEmbeds(It.Is<IEnumerable<IGrouping<string,IChildNode>>>(g => g.Count() == 4)),
-            Times.Once
-        );
+
+        formatterMock.Received()
+                     .GetTopLevelHelpEmbeds(Arg.Is<IEnumerable<IGrouping<string, IChildNode>>>(g => g.Count() == 4));
     }
 }

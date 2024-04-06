@@ -59,7 +59,7 @@ public class CommandHelpService : ICommandHelpService
 
         IEnumerable<IEmbed> embeds;
 
-#pragma warning disable CS8509 // 'switch expression is not exhaustive'; heuristically unreachable condition
+    #pragma warning disable CS8509 // 'switch expression is not exhaustive'; heuristically unreachable condition
         embeds = (nodes.Count, string.IsNullOrEmpty(commandName), nodes.FirstOrDefault() is IParentNode) switch
         {
             (> 1, true,  _) => formatter.GetTopLevelHelpEmbeds(nodes.GroupBy(n => n.Key)),
@@ -67,13 +67,13 @@ public class CommandHelpService : ICommandHelpService
             (  1, _, false) => new [] {formatter.GetCommandHelp(nodes.Single()) },
             (  1, _,  true) => formatter.GetCommandHelp(nodes)
         };
-#pragma warning restore CS8509
+    #pragma warning restore CS8509
 
         var sendResult = await _channels.CreateMessageAsync(channelID, embeds: embeds.ToArray());
 
         return sendResult.IsSuccess ? Result.FromSuccess() : Result.FromError(sendResult.Error);
     }
-    
+
     public async Task<(IEnumerable<IChildNode> Nodes, ConditionAttribute? UnsatisfiedCondition)> EvaluateNodeConditionsAsync(IReadOnlyList<IChildNode> nodes)
     {
         var successfulNodes = new HashSet<IChildNode>();

@@ -18,7 +18,7 @@
  - Add spacing between command categories
  
  - Fix path building, constructing the correct path for nested commands</PackageReleaseNotes>
-        <PackageVersion>1.1.1</PackageVersion>
+        <PackageVersion>1.1.2</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
